@@ -1,3 +1,4 @@
 // src/config.js
 
-export const LOGIN_PASSWORD = context.env.CODE;
+//get the password from the environment variable in Cloudflare Pages
+export const LOGIN_PASSWORD = process.env.REACT_APP_LOGIN_PASSWORD;
