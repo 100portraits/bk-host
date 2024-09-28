@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
-import { LOGIN_PASSWORD } from '../config';
 
 const Login = ({ onLogin }) => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+
+
+  //get the password from cloudflare pages
+  const LOGIN_PASSWORD = process.env.CODE
 
   const handleLogin = (e) => {
     e.preventDefault();
@@ -15,7 +18,7 @@ const Login = ({ onLogin }) => {
   };
 
   console.log(LOGIN_PASSWORD)
-  
+
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
       <div className="w-full max-w-md p-8 space-y-6 bg-white rounded shadow-md">
