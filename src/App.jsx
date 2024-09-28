@@ -1,14 +1,35 @@
-// app.jsx 
+// src/App.jsx
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import Dashboard from './components/Dashboard';
 import WalkInForm from './components/WalkInForm';
+import Login from './components/Login';
+import { app } from './firebase';
 
 const App = () => {
+  const [user, setUser] = useState(null);
+  const auth = getAuth(app);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setUser(user);
+    });
+    return () => unsubscribe();
+  }, [auth]);
+
+  const handleLogin = () => {
+    setUser(auth.currentUser);
+  };
+
+  if (!user) {
+    return <Login onLogin={handleLogin} />;
+  }
+
   return (
     <Router>
-      <div className="p-4  text-black">
+      <div className="p-4 text-black">
         <nav className="mb-4 flex justify-start">
           <Link
             to="/"
