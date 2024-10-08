@@ -9,12 +9,12 @@ const Dashboard = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [currentEditId, setCurrentEditId] = useState(null);
   const [updatedData, setUpdatedData] = useState({});
-  const today = new Date().setHours(0, 0, 0, 0);
+  const [selectedDate, setSelectedDate] = useState(new Date().setHours(0, 0, 0, 0));
 
   useEffect(() => {
     const fetchAppointments = async () => {
-      const startOfDay = new Date(today);
-      const endOfDay = new Date(today).setHours(23, 59, 59, 999);
+      const startOfDay = new Date(selectedDate);
+      const endOfDay = new Date(selectedDate).setHours(23, 59, 59, 999);
       const q = query(
         collection(db, 'appointments'),
         where('timestamp', '>=', Timestamp.fromDate(new Date(startOfDay))),
@@ -26,8 +26,8 @@ const Dashboard = () => {
     };
 
     const fetchWalkIns = async () => {
-      const startOfDay = new Date(today);
-      const endOfDay = new Date(today).setHours(23, 59, 59, 999);
+      const startOfDay = new Date(selectedDate);
+      const endOfDay = new Date(selectedDate).setHours(23, 59, 59, 999);
       const q = query(
         collection(db, 'walkIns'),
         where('timestamp', '>=', Timestamp.fromDate(new Date(startOfDay))),
@@ -40,7 +40,7 @@ const Dashboard = () => {
 
     fetchAppointments();
     fetchWalkIns();
-  }, [today]);
+  }, [selectedDate]);
 
   // Count completed repairs (appointments and walk-ins)
   useEffect(() => {
@@ -117,18 +117,40 @@ const Dashboard = () => {
     setCurrentEditId(id);
   };
 
+  const changeDate = (days) => {
+    const newDate = new Date(selectedDate);
+    newDate.setDate(newDate.getDate() + days);
+    setSelectedDate(newDate.setHours(0, 0, 0, 0));
+  };
+
   return (
     <div className="p-6 shadow rounded border border-red-300 bg-red-100">
-      <h2 className="text-3xl font-bold mb-4 text-red-700">Today's Appointments</h2>
-      <h3 className="text-xl font-bold">Total Repairs Completed Today: {repairCount}</h3>
+      <div className="flex justify-between items-center mb-4">
+        <button onClick={() => changeDate(-1)} className="p-2 bg-blue-500 text-white rounded">
+          Previous Day
+        </button>
+        <h2 className="text-3xl font-bold text-red-700">
+          Appointments for {new Date(selectedDate).toLocaleDateString()}
+        </h2>
+        <button onClick={() => changeDate(1)} className="p-2 bg-blue-500 text-white rounded">
+          Next Day
+        </button>
+      </div>
+      <h3 className="text-xl font-bold">Total Repairs Completed: {repairCount}</h3>
       <ul>
         {appointments.map(appointment => (
           <li key={appointment.id} className="mb-4 p-4 bg-white shadow rounded border border-red-300">
-            <div className="font-semibold text-lg">Name: {appointment.name}</div>
-            <div>Phone: {appointment.phone}</div>
-            <div>Email: {appointment.email}</div>
-            <div>Bike Type: {appointment.bikeType}</div>
-            <div>Service Type: {appointment.serviceType}</div>
+            <div className="font-semibold text-lg">Name: {appointment.userInfo.name}</div>
+            <div>Phone: {appointment.userInfo.phoneNumber}</div>
+            <div>Email: {appointment.userInfo.email}</div>
+            
+            <h3 className="font-semibold mt-2">Booking Details:</h3>
+            {Object.entries(appointment.bookingSelection).map(([key, value]) => (
+              <div key={key}>
+                <span className="font-medium">{key}:</span> {value}
+              </div>
+            ))}
+
             <div>Estimated Time: {appointment.estimatedTime} minutes</div>
             <div>Experience Level: {appointment.experience}</div>
 
@@ -137,12 +159,13 @@ const Dashboard = () => {
               {[...Array(5)].map((_, index) => (
                 <span
                   key={index}
-                  className={`inline-block w-4 h-4 rounded-full ${index < appointment.experience ? 'bg-red-500' : 'bg-red-100'}`}
+                  className={`inline-block w-4 h-4 rounded-full ${index < parseInt(appointment.experience) ? 'bg-red-500' : 'bg-red-100'}`}
                 ></span>
               ))}
             </div>
 
-            <div>Time: {new Date(appointment.timestamp.seconds * 1000).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}</div>
+            <div>Date: {new Date(appointment.selectedDate).toLocaleDateString()}</div>
+            <div>Time: {appointment.selectedTime}</div>
             <div>Status: {appointment.completed ? 'Completed' : appointment.noShow ? 'No-show' : 'Pending'}</div>
 
             {/* Show Undo if Completed or No-show */}

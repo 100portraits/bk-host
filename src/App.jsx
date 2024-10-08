@@ -1,64 +1,79 @@
-import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
-import { getAuth, onAuthStateChanged } from 'firebase/auth';
+// App.jsx
+
+import React from 'react';
+import { BrowserRouter as Router, Route, Routes, Navigate, useLocation } from 'react-router-dom';
 import Dashboard from './components/Dashboard';
 import WalkInForm from './components/WalkInForm';
 import Login from './components/Login';
-import UserProfile from './components/UserProfile'; // Import UserProfile component
-import { app } from './firebase';
+import UserProfile from './components/UserProfile';
+import AwaitingApproval from './components/AwaitingApproval';
+import { useAuth } from './useAuth';
+import Nav from './components/Nav';
 
 const App = () => {
-  const [user, setUser] = useState(null);
-  const auth = getAuth(app);
+  const { user, userStatus, loading, userStatusLoading } = useAuth();
 
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setUser(user);
-    });
-    return () => unsubscribe();
-  }, [auth]);
-
-  const handleLogin = () => {
-    setUser(auth.currentUser);
-  };
-
-  if (!user) {
-    return <Login onLogin={handleLogin} />;
+  if (loading || userStatusLoading) {
+    return <div>Loading...</div>;
   }
 
-  const handleLogOut = async () => {
-    await auth.signOut();
-    setUser
-  }
-
+  const showNav = user && userStatus === 'approved';
 
   return (
     <Router>
-      <div className="p-4 text-black">
-        <nav className="mb-4 flex justify-between items-center">
-          <div className="flex">
-            <Link
-              to="/"
-              className="mr-4 p-2 text-white bg-red-700 rounded hover:bg-red-600"
-            >
-              Dashboard
-            </Link>
-            <Link
-              to="/walk-in"
-              className="p-2 text-white bg-red-700 rounded hover:bg-red-600"
-            >
-              Record Walk-in
-            </Link>
-          </div>
-          <UserProfile user={user} /> {/* Add UserProfile component */}
-          <button onClick={handleLogOut} className="p-2 text-white bg-red-700 rounded hover:bg-red-600">
-            Log Out
-          </button>
-        </nav>
-        <Routes>
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/walk-in" element={<WalkInForm />} />
-        </Routes>
+      <div className="flex flex-col min-h-screen">
+        {showNav && <Nav />}
+        <div className="flex-grow">
+          <Routes>
+            {/* Public Route */}
+            <Route
+              path="/login"
+              element={user ? <Navigate to="/" replace /> : <Login />}
+            />
+
+            {/* Awaiting Approval Route */}
+            <Route
+              path="/awaiting-approval"
+              element={
+                user && userStatus === 'awaiting approval' ? (
+                  <AwaitingApproval />
+                ) : user ? (
+                  // If user is logged in but status is not 'awaiting approval', redirect accordingly
+                  userStatus === 'approved' ? (
+                    <Navigate to="/" replace />
+                  ) : (
+                    <Navigate to="/login" replace />
+                  )
+                ) : (
+                  <Navigate to="/login" replace />
+                )
+              }
+            />
+
+            {/* Protected Dashboard Route */}
+            <Route
+              path="/"
+              element={
+                user ? (
+                  userStatus === 'approved' ? (
+                    <Dashboard />
+                  ) : (
+                    <Navigate to="/awaiting-approval" replace />
+                  )
+                ) : (
+                  <Navigate to="/login" replace />
+                )
+              }
+            />
+
+            {/* Other Routes */}
+            <Route path="/walk-in" element={<WalkInForm />} />
+            <Route path="/profile" element={<UserProfile user={user} />} />
+
+            {/* Fallback Route */}
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </div>
       </div>
     </Router>
   );

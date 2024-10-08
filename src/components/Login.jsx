@@ -1,8 +1,18 @@
-import React, { useState } from 'react';
-import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
-import { app } from '../firebase'; // Ensure you export `app` from firebase.js
+// Login.jsx
 
-const Login = ({ onLogin }) => {
+import React, { useState } from 'react';
+import {
+  getAuth,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  updateProfile,
+  signInWithPopup,
+  GoogleAuthProvider
+} from 'firebase/auth';
+import { doc, setDoc, getDoc } from 'firebase/firestore';
+import { app, db } from '../firebase';
+
+const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isSignUp, setIsSignUp] = useState(false);
@@ -12,29 +22,51 @@ const Login = ({ onLogin }) => {
 
   const handleEmailLogin = async (e) => {
     e.preventDefault();
+    setError(''); // Clear previous errors
     try {
+      let user;
       if (isSignUp) {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        await updateProfile(userCredential.user, { displayName: email.split('@')[0] });
+        user = userCredential.user;
+        await updateProfile(user, { displayName: email.split('@')[0] });
+        
+        await setDoc(doc(db, "users", user.uid), {
+          email: user.email,
+          displayName: user.displayName,
+          createdAt: new Date(),
+          status: "awaiting approval"
+        });
       } else {
-        await signInWithEmailAndPassword(auth, email, password);
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        user = userCredential.user;
       }
-      onLogin();
+      // No need to manually refresh user status; useAuth handles it
     } catch (error) {
       setError(error.message);
     }
   };
 
   const handleGoogleLogin = async () => {
+    setError(''); // Clear previous errors
     try {
-      await signInWithPopup(auth, provider);
-      onLogin();
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+      
+      const userDoc = await getDoc(doc(db, "users", user.uid));
+      
+      if (!userDoc.exists()) {
+        await setDoc(doc(db, "users", user.uid), {
+          email: user.email,
+          displayName: user.displayName,
+          createdAt: new Date(),
+          status: "awaiting approval"
+        });
+      }
+      // No need to manually refresh user status; useAuth handles it
     } catch (error) {
       setError(error.message);
     }
   };
-
-  
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
