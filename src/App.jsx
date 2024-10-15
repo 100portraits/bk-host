@@ -13,18 +13,16 @@ import Nav from './components/Nav';
 import { ThemeProvider, useTheme } from './ThemeContext.jsx';
 
 const AppContent = () => {
-  const { user, userStatus, loading, userStatusLoading } = useAuth();
+  const { user, userStatus, loading } = useAuth();
   const { isDarkMode } = useTheme();
 
-  if (loading || userStatusLoading) {
+  if (loading) {
     return <div>Loading...</div>;
   }
 
-  const showNav = user && userStatus === 'approved';
-
   return (
     <div className={`flex flex-col min-h-screen ${isDarkMode ? 'dark' : ''}`}>
-      {showNav && <Nav />}
+      {user && userStatus === 'approved' && <Nav />}
       <div className={`flex-grow ${isDarkMode ? 'bg-gray-900' : 'bg-gray-100'}`}>
         <Routes>
           {/* Public Route */}
@@ -39,15 +37,8 @@ const AppContent = () => {
             element={
               user && userStatus === 'awaiting approval' ? (
                 <AwaitingApproval />
-              ) : user ? (
-                // If user is logged in but status is not 'awaiting approval', redirect accordingly
-                userStatus === 'approved' ? (
-                  <Navigate to="/" replace />
-                ) : (
-                  <Navigate to="/login" replace />
-                )
               ) : (
-                <Navigate to="/login" replace />
+                <Navigate to="/" replace />
               )
             }
           />
@@ -69,8 +60,26 @@ const AppContent = () => {
           />
 
           {/* Other Routes */}
-          <Route path="/walk-in" element={<WalkInForm />} />
-          <Route path="/profile" element={<UserProfile user={user} />} />
+          <Route 
+            path="/walk-in" 
+            element={
+              user && userStatus === 'approved' ? (
+                <WalkInForm />
+              ) : (
+                <Navigate to="/" replace />
+              )
+            } 
+          />
+          <Route 
+            path="/profile" 
+            element={
+              user && userStatus === 'approved' ? (
+                <UserProfile user={user} />
+              ) : (
+                <Navigate to="/" replace />
+              )
+            } 
+          />
           
           {/* Calendar Route */}
           <Route
@@ -79,7 +88,7 @@ const AppContent = () => {
               user && userStatus === 'approved' ? (
                 <Calendar />
               ) : (
-                <Navigate to="/login" replace />
+                <Navigate to="/" replace />
               )
             }
           />
