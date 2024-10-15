@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { startOfWeek, addDays, format, addWeeks, isTuesday, isFriday } from 'date-fns';
+import { startOfMonth, endOfMonth, eachDayOfInterval, format, isTuesday, isFriday, subMonths, addMonths, isSameMonth, startOfWeek, endOfWeek, isWeekend, isBefore, startOfDay } from 'date-fns';
 import { db } from '../firebase.js';
 import { collection, query, where, getDocs, Timestamp, updateDoc, arrayUnion, arrayRemove, doc } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
@@ -9,27 +9,22 @@ const Calendar = () => {
   const [datesToRemove, setDatesToRemove] = useState([]);
   const [calendarDates, setCalendarDates] = useState([]);
   const [showSaveButton, setShowSaveButton] = useState(false);
-  const [dateRange, setDateRange] = useState('');
   const [shifts, setShifts] = useState([]);
+  const [currentMonth, setCurrentMonth] = useState(new Date());
   const auth = getAuth();
   const currentUser = auth.currentUser;
 
   useEffect(() => {
-    const today = new Date();
-    const start = startOfWeek(today, { weekStartsOn: 1 });
-    let dates = [];
+    generateCalendarDates(currentMonth);
+  }, [currentMonth]);
 
-    for (let week = 0; week < 4; week++) {
-      for (let day = 0; day < 5; day++) {
-        const date = addDays(addWeeks(start, week), day);
-        dates.push(date);
-      }
-    }
-
+  const generateCalendarDates = (month) => {
+    const start = startOfWeek(startOfMonth(month));
+    const end = endOfWeek(endOfMonth(month));
+    const dates = eachDayOfInterval({ start, end });
     setCalendarDates(dates);
-    setDateRange(`${format(dates[0], 'MMM d')} - ${format(dates[dates.length - 1], 'MMM d')}`);
-    loadShifts(dates[0], dates[dates.length - 1]);
-  }, []);
+    loadShifts(start, end);
+  };
 
   const loadShifts = async (startDate, endDate) => {
     const shiftsRef = collection(db, 'shifts');
@@ -53,7 +48,7 @@ const Calendar = () => {
   };
 
   const handleDateClick = (date) => {
-    if (isTuesday(date) || isFriday(date)) return;
+    if (isTuesday(date) || isFriday(date) || isWeekend(date) || isBefore(date, startOfDay(new Date()))) return;
 
     const dateString = format(date, 'yyyy-MM-dd');
     const shift = shifts.find(s => format(s.date.toDate(), 'yyyy-MM-dd') === dateString);
@@ -103,20 +98,42 @@ const Calendar = () => {
       setSelectedDates([]);
       setDatesToRemove([]);
       // Reload shifts to reflect the changes
-      loadShifts(calendarDates[0], calendarDates[calendarDates.length - 1]);
+      loadShifts(startOfMonth(currentMonth), endOfMonth(currentMonth));
     } catch (error) {
       console.error('Error updating shifts:', error);
     }
   };
 
+  const handlePreviousMonth = () => {
+    setCurrentMonth(prevMonth => subMonths(prevMonth, 1));
+  };
+
+  const handleNextMonth = () => {
+    setCurrentMonth(prevMonth => addMonths(prevMonth, 1));
+  };
+
   return (
     <div className="p-6 bg-white dark:bg-gray-800 shadow-lg rounded-lg mb-6">
       <h1 className="text-3xl font-bold mb-6 text-primary-700 dark:text-gray-200">Availability Calendar</h1>
-      <div className="mb-4 text-lg font-semibold text-gray-700 dark:text-gray-300">
-        {dateRange}
+      <div className="flex justify-between items-center mb-4">
+        <button
+          onClick={handlePreviousMonth}
+          className="px-4 py-2 bg-primary-600 text-white rounded hover:bg-primary-700 transition-colors duration-200"
+        >
+          Previous Month
+        </button>
+        <div className="text-lg font-semibold text-gray-700 dark:text-gray-300">
+          {format(currentMonth, 'MMMM yyyy')}
+        </div>
+        <button
+          onClick={handleNextMonth}
+          className="px-4 py-2 bg-primary-600 text-white rounded hover:bg-primary-700 transition-colors duration-200"
+        >
+          Next Month
+        </button>
       </div>
-      <div className="grid grid-cols-5 gap-2 mb-4">
-        {['Mon', 'Tue', 'Wed', 'Thu', 'Fri'].map(day => (
+      <div className="grid grid-cols-7 gap-2 mb-4">
+        {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
           <div key={day} className="text-center font-bold text-gray-600 dark:text-gray-400">{day}</div>
         ))}
         {calendarDates.map((date, index) => {
@@ -125,14 +142,17 @@ const Calendar = () => {
           const isUserHost = shift?.hosts?.includes(currentUser?.displayName || currentUser?.email);
           const isSelected = selectedDates.includes(dateString);
           const isToRemove = datesToRemove.includes(dateString);
+          const isCurrentMonth = isSameMonth(date, currentMonth);
+          const isPastDate = isBefore(date, startOfDay(new Date()));
+          const isWeekendOrTuesdayOrFriday = isWeekend(date) || isTuesday(date) || isFriday(date);
           
           return (
             <div
               key={index}
-              onClick={() => handleDateClick(date)}
+              onClick={() => isCurrentMonth && !isPastDate && !isWeekendOrTuesdayOrFriday && handleDateClick(date)}
               className={`
                 p-2 text-center cursor-pointer border rounded transition-colors duration-200
-                ${isTuesday(date) || isFriday(date) 
+                ${!isCurrentMonth || isPastDate || isWeekendOrTuesdayOrFriday
                   ? 'bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed' 
                   : isUserHost && !isToRemove
                     ? 'bg-primary-500 text-white'
