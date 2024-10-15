@@ -62,122 +62,125 @@ const WalkInForm = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="p-6 shadow rounded border border-red-300 bg-red-100">
-      <h2 className="text-2xl font-bold mb-4 text-red-700">Walk-in Customer</h2>
+    <form onSubmit={handleSubmit} className="p-6 bg-white dark:bg-gray-800 shadow-lg rounded-b-lg">
+      <h2 className="text-2xl font-bold mb-6 text-primary-700 dark:text-gray-200">Record Walk-in Customer</h2>
 
-      {/* Error Message */}
       {errorMessage && (
-        <div className="mb-4 p-2 bg-red-200 text-red-700 rounded">
+        <div className="mb-4 p-2 bg-secondary-100 dark:bg-secondary-900 text-secondary-700 dark:text-secondary-300 rounded-md">
           {errorMessage}
         </div>
       )}
 
-      {/* Success Message */}
       {successMessage && (
-        <div className="mb-4 p-2 bg-blue-200 text-blue-700 rounded">
+        <div className="mb-4 p-2 bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300 rounded-md">
           {successMessage}
         </div>
       )}
 
-      {/* Bike Type */}
-      <div className="mb-4">
-        <label>Bike Type</label>
-        <div className="flex space-x-2">
-          {['Road Bike', 'Dutch Bike', 'Mountain/Tour Bike', 'Other'].map(type => (
-            <button
-              key={type}
-              type="button"
-              onClick={() => setBikeType(type)}
-              className={`p-2 border rounded ${
-                bikeType === type ? 'bg-red-500 text-white' : 'bg-gray-100'
-              }`}
-            >
-              {type}
-            </button>
-          ))}
+      <div className="space-y-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Bike Type</label>
+          <div className="flex flex-wrap gap-2">
+            {['Road Bike', 'Dutch Bike', 'Mountain/Tour Bike', 'Other'].map(type => (
+              <button
+                key={type}
+                type="button"
+                onClick={() => setBikeType(type)}
+                className={`px-3 py-1 rounded-full ${
+                  bikeType === type 
+                    ? 'bg-primary-500 text-white' 
+                    : 'bg-gray-200 text-gray-700 dark:bg-gray-600 dark:text-gray-300'
+                }`}
+              >
+                {type}
+              </button>
+            ))}
+          </div>
+          {bikeType === 'Other' && (
+            <input
+              type="text"
+              value={otherBikeType}
+              onChange={(e) => setOtherBikeType(e.target.value)}
+              placeholder="Specify other type"
+              className="input mt-2 dark:bg-gray-700 dark:text-white"
+              required
+            />
+          )}
         </div>
-        {bikeType === 'Other' && (
-          <input
-            type="text"
-            value={otherBikeType}
-            onChange={(e) => setOtherBikeType(e.target.value)}
-            placeholder="Specify other type"
-            className="mt-2 p-2 border rounded w-full focus:outline-none focus:border-red-500"
-            required
-          />
-        )}
-      </div>
 
-      {/* Service Type */}
-      <div className="mb-4">
-        <label>Service Type</label>
-        <div className="flex space-x-2">
-          {['Tire/Tube', 'Chain', 'Brakes', 'Wheel', 'Other'].map(service => (
-            <button
-              key={service}
-              type="button"
-              onClick={() => setServiceType(service)}
-              className={`p-2 border rounded ${
-                serviceType === service ? 'bg-red-500 text-white' : 'bg-gray-100'
-              }`}
-            >
-              {service}
-            </button>
-          ))}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Service Type</label>
+          <div className="flex flex-wrap gap-2">
+            {['Tire/Tube', 'Chain', 'Brakes', 'Wheel', 'Other'].map(service => (
+              <button
+                key={service}
+                type="button"
+                onClick={() => setServiceType(service)}
+                className={`px-3 py-1 rounded-full ${
+                  serviceType === service 
+                    ? 'bg-primary-500 text-white' 
+                    : 'bg-gray-200 text-gray-700 dark:bg-gray-600 dark:text-gray-300'
+                }`}
+              >
+                {service}
+              </button>
+            ))}
+          </div>
+          {serviceType === 'Other' && (
+            <input
+              type="text"
+              value={otherServiceType}
+              onChange={(e) => setOtherServiceType(e.target.value)}
+              placeholder="Specify other service"
+              className="input mt-2 dark:bg-gray-700 dark:text-white"
+              required
+            />
+          )}
         </div>
-        {serviceType === 'Other' && (
-          <input
-            type="text"
-            value={otherServiceType}
-            onChange={(e) => setOtherServiceType(e.target.value)}
-            placeholder="Specify other service"
-            className="mt-2 p-2 border rounded w-full focus:outline-none focus:border-red-500"
-            required
-          />
-        )}
-      </div>
 
-      {/* Amount Paid */}
-      <div className="mb-4">
-        <label>Amount Paid (€)</label>
-        <div className="flex space-x-2">
-          {['5', '8', 'Other'].map(amount => (
-            <button
-              key={amount}
-              type="button"
-              onClick={() => setAmountPaid(amount)}
-              className={`p-2 border rounded ${
-                amountPaid === amount ? 'bg-red-500 text-white' : 'bg-gray-100'
-              }`}
-            >
-              {amount}€
-            </button>
-          ))}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Amount Paid (€)</label>
+          <div className="flex flex-wrap gap-2">
+            {['5', '8', 'Other'].map(amount => (
+              <button
+                key={amount}
+                type="button"
+                onClick={() => setAmountPaid(amount)}
+                className={`px-3 py-1 rounded-full ${
+                  amountPaid === amount 
+                    ? 'bg-primary-500 text-white' 
+                    : 'bg-gray-200 text-gray-700 dark:bg-gray-600 dark:text-gray-300'
+                }`}
+              >
+                {amount}€
+              </button>
+            ))}
+          </div>
+          {amountPaid === 'Other' && (
+            <input
+              type="number"
+              value={otherAmountPaid}
+              onChange={(e) => setOtherAmountPaid(e.target.value)}
+              placeholder="Specify amount"
+              className="input mt-2 dark:bg-gray-700 dark:text-white"
+              required
+            />
+          )}
         </div>
-        {amountPaid === 'Other' && (
-          <input
-            type="number"
-            value={otherAmountPaid}
-            onChange={(e) => setOtherAmountPaid(e.target.value)}
-            placeholder="Specify amount"
-            className="mt-2 p-2 border rounded w-full focus:outline-none focus:border-red-500"
-            required
-          />
-        )}
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Notes</label>
+          <textarea
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            className="input dark:bg-gray-700 dark:text-white"
+            placeholder="Additional notes (optional)"
+            rows="3"
+          ></textarea>
+        </div>
       </div>
 
-      {/* Notes */}
-      <div className="mb-4">
-        <label>Notes</label>
-        <textarea
-          value={notes}
-          onChange={(e) => setNotes(e.target.value)}
-          className="w-full p-2 border rounded focus:outline-none focus:border-red-500"
-          placeholder="Additional notes (optional)"
-        ></textarea>
-      </div>
-
-      <button type="submit" className="p-2 bg-red-500 text-white rounded hover:bg-red-600">
+      <button type="submit" className="btn btn-primary mt-6">
         Submit
       </button>
     </form>

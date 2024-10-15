@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { collection, query, where, getDocs, updateDoc, deleteDoc, doc, Timestamp } from 'firebase/firestore';
 import { db } from '../firebase';
+import AppointmentModal from './AppointmentModal'; // We'll create this component
 
 const Dashboard = () => {
   const [appointments, setAppointments] = useState([]);
@@ -10,6 +11,7 @@ const Dashboard = () => {
   const [currentEditId, setCurrentEditId] = useState(null);
   const [updatedData, setUpdatedData] = useState({});
   const [selectedDate, setSelectedDate] = useState(new Date().setHours(0, 0, 0, 0));
+  const [selectedAppointment, setSelectedAppointment] = useState(null);
 
   useEffect(() => {
     const fetchAppointments = async () => {
@@ -123,148 +125,122 @@ const Dashboard = () => {
     setSelectedDate(newDate.setHours(0, 0, 0, 0));
   };
 
+  const openAppointmentModal = (appointment) => {
+    setSelectedAppointment(appointment);
+  };
+
+  const closeAppointmentModal = () => {
+    setSelectedAppointment(null);
+  };
+
   return (
-    <div className="p-6 shadow rounded border border-red-300 bg-red-100">
-      <div className="flex justify-between items-center mb-4">
-        <button onClick={() => changeDate(-1)} className="p-2 bg-blue-500 text-white rounded">
+    <div className="p-6 bg-white dark:bg-gray-800 shadow-lg rounded-b-lg mb-6">
+      <div className="flex justify-between items-center mb-6">
+        <button onClick={() => changeDate(-1)} className="btn btn-primary dark:bg-primary-700 dark:hover:bg-primary-600">
           Previous Day
         </button>
-        <h2 className="text-3xl font-bold text-red-700">
-          Appointments for {new Date(selectedDate).toLocaleDateString()}
+        <h2 className="text-3xl font-bold text-primary-700 dark:text-gray-200">
+          {new Date(selectedDate).toLocaleDateString()}
         </h2>
-        <button onClick={() => changeDate(1)} className="p-2 bg-blue-500 text-white rounded">
+        <button onClick={() => changeDate(1)} className="btn btn-primary dark:bg-primary-700 dark:hover:bg-primary-600">
           Next Day
         </button>
       </div>
-      <h3 className="text-xl font-bold">Total Repairs Completed: {repairCount}</h3>
-      <ul>
+      <div className="bg-primary-100 dark:bg-primary-900 p-4 rounded-lg mb-6">
+        <h3 className="text-xl font-semibold text-black dark:text-gray-200">Total Repairs Completed: {repairCount}</h3>
+      </div>
+      <h3 className="text-xl font-semibold text-black dark:text-gray-200 mb-4">Today's Appointments</h3>
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         {appointments.map(appointment => (
-          <li key={appointment.id} className="mb-4 p-4 bg-white shadow rounded border border-red-300">
-            <div className="font-semibold text-lg">Name: {appointment.userInfo.name}</div>
-            <div>Phone: {appointment.userInfo.phoneNumber}</div>
-            <div>Email: {appointment.userInfo.email}</div>
-            
-            <h3 className="font-semibold mt-2">Booking Details:</h3>
-            {Object.entries(appointment.bookingSelection).map(([key, value]) => (
-              <div key={key}>
-                <span className="font-medium">{key}:</span> {value}
-              </div>
-            ))}
-
-            <div>Estimated Time: {appointment.estimatedTime} minutes</div>
-            <div>Experience Level: {appointment.experience}</div>
-
-            {/* Visual representation of experience */}
-            <div className="flex space-x-1 mt-2">
-              {[...Array(5)].map((_, index) => (
-                <span
-                  key={index}
-                  className={`inline-block w-4 h-4 rounded-full ${index < parseInt(appointment.experience) ? 'bg-red-500' : 'bg-red-100'}`}
-                ></span>
-              ))}
-            </div>
-
-            <div>Date: {new Date(appointment.selectedDate).toLocaleDateString()}</div>
-            <div>Time: {appointment.selectedTime}</div>
-            <div>Status: {appointment.completed ? 'Completed' : appointment.noShow ? 'No-show' : 'Pending'}</div>
-
-            {/* Show Undo if Completed or No-show */}
-            {(appointment.completed || appointment.noShow) && (
-              <button
-                onClick={() => undoStatusChange(appointment.id)}
-                className="p-2 bg-yellow-500 text-white rounded"
-              >
-                Undo
-              </button>
-            )}
-
-            {!appointment.completed && !appointment.noShow && (
-              <div className="mt-2 flex space-x-2">
-                <button
-                  onClick={() => markAsCompleted(appointment.id)}
-                  className="p-2 bg-blue-500 text-white rounded"
-                >
-                  Mark as Completed
-                </button>
-                <button
-                  onClick={() => markAsNoShow(appointment.id)}
-                  className="p-2 bg-red-700 text-white rounded"
-                >
-                  No-show
-                </button>
-              </div>
-            )}
-          </li>
+          <div 
+            key={appointment.id} 
+            className="p-4 bg-white dark:bg-gray-700 shadow-md rounded-lg cursor-pointer hover:shadow-lg transition-shadow duration-300 border-l-4 border-primary-500"
+            onClick={() => openAppointmentModal(appointment)}
+          >
+            <div className="font-semibold text-primary-700 dark:text-primary-300">{appointment.selectedTime}</div>
+            <div className="text-gray-600 dark:text-gray-200">{appointment.userInfo.name}</div>
+          </div>
         ))}
-      </ul>
+      </div>
 
-      <h2 className="text-3xl font-bold mt-8 mb-4 text-red-700">Today's Walk-ins</h2>
-      <ul>
-        {walkIns.map(walkIn => (
-          <li key={walkIn.id} className="mb-4 p-4 bg-white shadow rounded border border-red-300">
-            <div>Bike Type: {walkIn.bikeType}</div>
-            <div>Service Type: {walkIn.serviceType}</div>
-            <div>Amount Paid: {walkIn.amountPaid}€</div>
-            <div>Time: {new Date(walkIn.timestamp.seconds * 1000).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}</div>
+      {selectedAppointment && (
+        <AppointmentModal
+          appointment={selectedAppointment}
+          onClose={closeAppointmentModal}
+          markAsCompleted={markAsCompleted}
+          markAsNoShow={markAsNoShow}
+          undoStatusChange={undoStatusChange}
+        />
+      )}
 
-            {/* Edit and Delete buttons */}
-            <button
-              onClick={() => toggleEditWalkIn(walkIn.id)}
-              className="p-2 bg-blue-500 text-white rounded"
-            >
-              Edit
-            </button>
-            <button
-              onClick={() => deleteWalkIn(walkIn.id)}
-              className="p-2 bg-red-500 text-white rounded ml-2"
-            >
-              Delete
-            </button>
+      <h2 className="text-xl mt-8 mb-4 font-semibold text-black dark:text-gray-200">Today's Walk-ins</h2>
+      {walkIns.length > 0 ? (
+        <ul className="space-y-4">
+          {walkIns.map(walkIn => (
+            <li key={walkIn.id} className="p-4 bg-white dark:bg-gray-700 shadow-md rounded-lg border-l-4 border-secondary-500">
+              <div className="grid grid-cols-2 gap-2">
+                <div className="text-gray-700 dark:text-gray-300">Bike Type: <span className="font-semibold">{walkIn.bikeType}</span></div>
+                <div className="text-gray-700 dark:text-gray-300">Service Type: <span className="font-semibold">{walkIn.serviceType}</span></div>
+                <div className="text-gray-700 dark:text-gray-300">Amount Paid: <span className="font-semibold">{walkIn.amountPaid}€</span></div>
+                <div className="text-gray-700 dark:text-gray-300">Time: <span className="font-semibold">{new Date(walkIn.timestamp.seconds * 1000).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}</span></div>
+              </div>
 
-            {/* Editable Form for Walk-in */}
-            {isEditing && currentEditId === walkIn.id && (
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  handleWalkInUpdate(walkIn.id, updatedData);
-                }}
-              >
-                <div className="mt-4">
-                  <label>Bike Type</label>
+              <div className="mt-4 space-x-2">
+                <button
+                  onClick={() => toggleEditWalkIn(walkIn.id)}
+                  className="btn btn-primary"
+                >
+                  Edit
+                </button>
+                <button
+                  onClick={() => deleteWalkIn(walkIn.id)}
+                  className="btn btn-secondary"
+                >
+                  Delete
+                </button>
+              </div>
+
+              {isEditing && currentEditId === walkIn.id && (
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    handleWalkInUpdate(walkIn.id, updatedData);
+                  }}
+                  className="mt-4 space-y-4"
+                >
                   <input
                     type="text"
                     defaultValue={walkIn.bikeType}
                     onChange={(e) => setUpdatedData({ ...updatedData, bikeType: e.target.value })}
-                    className="p-2 border rounded w-full"
+                    className="input dark:bg-gray-600 dark:text-white"
+                    placeholder="Bike Type"
                     required
                   />
-                </div>
-                <div className="mt-4">
-                  <label>Service Type</label>
                   <input
                     type="text"
                     defaultValue={walkIn.serviceType}
                     onChange={(e) => setUpdatedData({ ...updatedData, serviceType: e.target.value })}
-                    className="p-2 border rounded w-full"
+                    className="input dark:bg-gray-600 dark:text-white"
+                    placeholder="Service Type"
                     required
                   />
-                </div>
-                <div className="mt-4">
-                  <label>Amount Paid</label>
                   <input
                     type="number"
                     defaultValue={walkIn.amountPaid}
                     onChange={(e) => setUpdatedData({ ...updatedData, amountPaid: e.target.value })}
-                    className="p-2 border rounded w-full"
+                    className="input dark:bg-gray-600 dark:text-white"
+                    placeholder="Amount Paid"
                     required
                   />
-                </div>
-                <button type="submit" className="mt-2 p-2 bg-green-500 text-white rounded">Update Walk-in</button>
-              </form>
-            )}
-          </li>
-        ))}
-      </ul>
+                  <button type="submit" className="btn btn-primary">Update Walk-in</button>
+                </form>
+              )}
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="text-gray-600 dark:text-gray-400 text-center py-4 bg-gray-100 dark:bg-gray-700 rounded-lg">No walk-ins recorded yet.</p>
+      )}
     </div>
   );
 };

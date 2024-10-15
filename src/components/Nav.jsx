@@ -2,6 +2,7 @@ import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../useAuth';
 import { getAuth, signOut } from 'firebase/auth';
+import DarkModeToggle from './DarkModeToggle';
 
 const Nav = () => {
   const { user, userStatus } = useAuth();
@@ -18,34 +19,38 @@ const Nav = () => {
   };
 
   return (
-    <nav className="bg-gray-100 shadow-md p-6">
-      <ul className="flex items-center justify-between">
-        <div className="flex space-x-4">
-          {user && userStatus === 'approved' && (
-            <>
-              <li>
-                <Link to="/" className="px-4 py-2 bg-red-200 text-gray-800 rounded-md shadow hover:bg-gray-300 transition duration-300">Dashboard</Link>
-              </li>
-              <li>
-                <Link to="/walk-in" className="px-4 py-2 bg-red-200 text-gray-800 rounded-md shadow hover:bg-gray-300 transition duration-300">Walk-in Form</Link>
-              </li>
-            </>
-          )}
+    <nav className="bg-primary-50 dark:bg-gray-700 shadow-md">
+      <div className="mx-auto">
+        <div className="flex justify-between h-16 py-2">
+          <div className="flex">
+            {user && userStatus === 'approved' && (
+              <>
+                <Link to="/" className="flex items-center px-3 ml-4 py-2 rounded-md text-sm lg:text-md font-medium text-black dark:text-gray-200 hover:text-primary-900 dark:hover:text-white hover:bg-primary-50 dark:hover:bg-gray-700">
+                  Dashboard
+                </Link>
+                <Link to="/walk-in" className="flex items-center px-3 py-2 rounded-md text-sm lg:text-md font-medium text-black dark:text-gray-200 hover:text-primary-900 dark:hover:text-white hover:bg-primary-50 dark:hover:bg-gray-700">
+                  Walk-in Form
+                </Link>
+                <Link to="/calendar" className="flex items-center px-3 py-2 rounded-md text-sm lg:text-md font-medium text-black dark:text-gray-200 hover:text-primary-900 dark:hover:text-white hover:bg-primary-50 dark:hover:bg-gray-700">
+                  Calendar
+                </Link>
+              </>
+            )}
+          </div>
+          <div className="flex items-center space-x-4 mr-4">
+            <DarkModeToggle />
+            {user ? (
+              <button onClick={handleLogout} className="btn btn-secondary ">
+                Logout
+              </button>
+            ) : (
+              <Link to="/login" className="btn btn-primary ">
+                Login
+              </Link>
+            )}
+          </div>
         </div>
-        <div className="flex space-x-4">
-          {user ? (
-            <>
-              <li>
-                <button onClick={handleLogout} className="px-4 py-2 bg-red-600 text-white rounded-md shadow hover:bg-red-700 transition duration-300">Logout</button>
-              </li>
-            </>
-          ) : (
-            <li>
-              <Link to="/login" className="px-4 py-2 bg-red-200 text-gray-800 rounded-md shadow hover:bg-gray-300 transition duration-300">Login</Link>
-            </li>
-          )}
-        </div>
-      </ul>
+      </div>
     </nav>
   );
 };
