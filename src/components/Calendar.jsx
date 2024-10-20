@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { startOfMonth, endOfMonth, eachDayOfInterval, format, isTuesday, isFriday, subMonths, addMonths, isSameMonth, startOfWeek, endOfWeek, isWeekend, isBefore, startOfDay } from 'date-fns';
 import { db } from '../firebase.js';
-import { collection, query, where, getDocs, Timestamp, updateDoc, arrayUnion, arrayRemove, doc } from 'firebase/firestore';
+import { collection, query, where, getDocs, Timestamp, updateDoc, arrayUnion, arrayRemove, doc, getDoc } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
 
 const Calendar = () => {
@@ -11,12 +11,34 @@ const Calendar = () => {
   const [showSaveButton, setShowSaveButton] = useState(false);
   const [shifts, setShifts] = useState([]);
   const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [usersMap, setUsersMap] = useState({}); // State to hold email to displayName mapping
+  const [showNotification, setShowNotification] = useState(false);
+  const [notificationMessage, setNotificationMessage] = useState('');
   const auth = getAuth();
   const currentUser = auth.currentUser;
 
   useEffect(() => {
     generateCalendarDates(currentMonth);
   }, [currentMonth]);
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      const usersCollection = collection(db, 'users');
+      const usersSnapshot = await getDocs(usersCollection);
+      const usersData = usersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+      // Create a mapping of email to displayName
+      const emailToNameMap = {};
+      usersData.forEach(user => {
+        if (user.email) {
+          emailToNameMap[user.email] = user.displayName; // Assuming displayName is the field you want
+        }
+      });
+      setUsersMap(emailToNameMap);
+    };
+
+    fetchUsers();
+  }, []);
 
   const generateCalendarDates = (month) => {
     const start = startOfWeek(startOfMonth(month));
@@ -89,7 +111,17 @@ const Calendar = () => {
       console.error('No user logged in');
       return;
     }
+
+    // Check if the user has a displayName
+    const userDocRef = doc(db, 'users', currentUser.uid);
+    const userDoc = await getDoc(userDocRef);
     
+    if (!userDoc.exists() || !userDoc.data().displayName) {
+      setNotificationMessage('Please set your name and role in your Profile before saving the calendar.'); // Set notification message
+      setShowNotification(true); // Show notification
+      return;
+    }
+
     try {
       await updateShiftsWithHost();
       console.log('Updated shifts with host:', selectedDates);
@@ -118,21 +150,21 @@ const Calendar = () => {
       <div className="flex justify-between items-center mb-4">
         <button
           onClick={handlePreviousMonth}
-          className="px-4 py-2 bg-primary-600 text-white rounded hover:bg-primary-700 transition-colors duration-200"
+          className="px-4 py-2 bg-primary-600 text-white rounded hover:bg-primary-700 transition-colors duration-200 dark:bg-primary-700 dark:hover:bg-primary-600"
         >
-          Previous Month
+          &lt;
         </button>
         <div className="text-lg font-semibold text-gray-700 dark:text-gray-300">
           {format(currentMonth, 'MMMM yyyy')}
         </div>
         <button
           onClick={handleNextMonth}
-          className="px-4 py-2 bg-primary-600 text-white rounded hover:bg-primary-700 transition-colors duration-200"
+          className="px-4 py-2 bg-primary-600 text-white rounded hover:bg-primary-700 transition-colors duration-200 dark:bg-primary-700 dark:hover:bg-primary-600"
         >
-          Next Month
+          &gt;
         </button>
       </div>
-      <div className="grid grid-cols-7 gap-2 mb-4">
+      <div className="grid grid-cols-7 md:gap-2 mb-4 gap-0">
         {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
           <div key={day} className="text-center font-bold text-gray-600 dark:text-gray-400">{day}</div>
         ))}
@@ -150,8 +182,7 @@ const Calendar = () => {
             <div
               key={index}
               onClick={() => isCurrentMonth && !isPastDate && !isWeekendOrTuesdayOrFriday && handleDateClick(date)}
-              className={`
-                p-2 text-center cursor-pointer border rounded transition-colors duration-200
+              className={`p-2 text-center cursor-pointer border transition-colors duration-200
                 ${!isCurrentMonth || isPastDate || isWeekendOrTuesdayOrFriday
                   ? 'bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed' 
                   : isUserHost && !isToRemove
@@ -159,18 +190,24 @@ const Calendar = () => {
                     : isSelected || isToRemove
                       ? 'bg-primary-300 text-white hover:bg-primary-400'
                       : 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200'}
+                sm:border sm:border-gray-300 sm:rounded-none sm:p-1
               `}
             >
               <div>{format(date, 'd')}</div>
               {shift?.hosts && (
                 <div className="text-xs mt-1">
-                  {shift.hosts.join(', ')}
+                  {shift.hosts.map(host => usersMap[host] || host).join(', ')} {/* Display user's name */}
                 </div>
               )}
             </div>
           );
         })}
       </div>
+      {showNotification && ( // Conditional rendering of the notification
+        <div className="mt-4 p-2 bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300 rounded-md">
+          {notificationMessage}
+        </div>
+      )}
       {showSaveButton && (
         <button
           onClick={handleSave}
@@ -179,6 +216,7 @@ const Calendar = () => {
           Save
         </button>
       )}
+      
     </div>
   );
 };

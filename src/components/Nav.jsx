@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../useAuth';
 import { getAuth, signOut } from 'firebase/auth';
 import DarkModeToggle from './DarkModeToggle';
+import { FaHome, FaClipboardList, FaCalendarAlt, FaUser } from 'react-icons/fa'; // Import icons
 
 const Nav = () => {
   const { user, userStatus } = useAuth();
@@ -17,6 +18,7 @@ const Nav = () => {
       console.error('Error signing out: ', error);
     }
   };
+  
 
   return (
     <nav className="bg-primary-50 dark:bg-gray-700 shadow-md">
@@ -26,13 +28,20 @@ const Nav = () => {
             {user && userStatus === 'approved' && (
               <>
                 <Link to="/" className="flex items-center px-3 ml-4 py-2 rounded-md text-sm lg:text-md font-medium text-black dark:text-gray-200 hover:text-primary-900 dark:hover:text-white hover:bg-primary-50 dark:hover:bg-gray-700">
-                  Dashboard
+                  <span className="hidden lg:inline">Dashboard</span> {/* Text hidden on small screens */}
+                  <FaHome className="lg:hidden" /> {/* Icon shown on small screens */}
                 </Link>
                 <Link to="/walk-in" className="flex items-center px-3 py-2 rounded-md text-sm lg:text-md font-medium text-black dark:text-gray-200 hover:text-primary-900 dark:hover:text-white hover:bg-primary-50 dark:hover:bg-gray-700">
-                  Walk-in Form
+                  <span className="hidden lg:inline">Walk-in Form</span>
+                  <FaClipboardList className="lg:hidden" />
                 </Link>
                 <Link to="/calendar" className="flex items-center px-3 py-2 rounded-md text-sm lg:text-md font-medium text-black dark:text-gray-200 hover:text-primary-900 dark:hover:text-white hover:bg-primary-50 dark:hover:bg-gray-700">
-                  Calendar
+                  <span className="hidden lg:inline">Calendar</span>
+                  <FaCalendarAlt className="lg:hidden" />
+                </Link>
+                <Link to="/profile" className="flex items-center px-3 py-2 rounded-md text-sm lg:text-md font-medium text-black dark:text-gray-200 hover:text-primary-900 dark:hover:text-white hover:bg-primary-50 dark:hover:bg-gray-700">
+                  <span className="hidden lg:inline">Profile</span>
+                  <FaUser className="lg:hidden" />
                 </Link>
               </>
             )}

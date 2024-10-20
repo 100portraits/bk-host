@@ -26,6 +26,8 @@ const Login = () => {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         await setDoc(doc(db, "users", userCredential.user.uid), {
           email: userCredential.user.email,
+          displayName: '', // New field for display name
+          role: '', // New field for role
           status: "awaiting approval"
         });
         navigate('/awaiting-approval');

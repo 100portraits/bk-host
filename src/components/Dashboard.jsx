@@ -12,6 +12,7 @@ const Dashboard = () => {
   const [updatedData, setUpdatedData] = useState({});
   const [selectedDate, setSelectedDate] = useState(new Date().setHours(0, 0, 0, 0));
   const [selectedAppointment, setSelectedAppointment] = useState(null);
+  const [notification, setNotification] = useState(''); // New state for notifications
 
   useEffect(() => {
     const fetchAppointments = async () => {
@@ -64,6 +65,8 @@ const Dashboard = () => {
         appointment.id === id ? { ...appointment, completed: true } : appointment
       )
     );
+
+    setSelectedAppointment((prev) => ({ ...prev, completed: true })); // Update selected appointment state
   };
 
   // Mark appointment as no-show and update state
@@ -76,6 +79,8 @@ const Dashboard = () => {
         appointment.id === id ? { ...appointment, noShow: true } : appointment
       )
     );
+
+    setSelectedAppointment((prev) => ({ ...prev, noShow: true })); // Update selected appointment state
   };
 
   // Undo appointment status and revert to pending
@@ -88,6 +93,8 @@ const Dashboard = () => {
         appointment.id === id ? { ...appointment, completed: false, noShow: false } : appointment
       )
     );
+
+    setSelectedAppointment((prev) => ({ ...prev, completed: false, noShow: false })); // Update selected appointment state
   };
 
   // Edit Walk-in Record
@@ -135,15 +142,16 @@ const Dashboard = () => {
 
   return (
     <div className="p-6 bg-white dark:bg-gray-800 shadow-lg rounded-b-lg mb-6">
+      {notification && <div className="notification">{notification}</div>} {/* Display notification */}
       <div className="flex justify-between items-center mb-6">
         <button onClick={() => changeDate(-1)} className="btn btn-primary dark:bg-primary-700 dark:hover:bg-primary-600">
-          Previous Day
+          &lt;
         </button>
         <h2 className="text-3xl font-bold text-primary-700 dark:text-gray-200">
           {new Date(selectedDate).toLocaleDateString()}
         </h2>
         <button onClick={() => changeDate(1)} className="btn btn-primary dark:bg-primary-700 dark:hover:bg-primary-600">
-          Next Day
+          &gt;
         </button>
       </div>
       <div className="bg-primary-100 dark:bg-primary-900 p-4 rounded-lg mb-6">

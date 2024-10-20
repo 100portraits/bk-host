@@ -22,3 +22,18 @@
     @apply w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500;
   }
 }
+
+/* Add this to your CSS file */
+nav {
+  position: relative;
+}
+
+nav .absolute {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 250px; /* Adjust width as needed */
+  z-index: 10; /* Ensure it appears above other content */
+  transition: transform 0.3s ease; /* Smooth transition */
+}
