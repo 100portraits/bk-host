@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { collection, query, where, getDocs, updateDoc, deleteDoc, doc, Timestamp } from 'firebase/firestore';
+import { collection, query, where, getDocs, updateDoc, deleteDoc, doc, Timestamp, getDoc, addDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import AppointmentModal from './AppointmentModal'; // We'll create this component
 
@@ -97,6 +97,99 @@ const Dashboard = () => {
     setSelectedAppointment((prev) => ({ ...prev, completed: false, noShow: false })); // Update selected appointment state
   };
 
+  // Delete appointment and re-open available slot
+  const deleteAppointment = async (id) => {
+    try {
+      const appointmentDoc = doc(db, 'appointments', id);
+      const appointmentSnapshot = await getDoc(appointmentDoc);
+      const appointmentData = appointmentSnapshot.data();
+
+      // Add to deletedAppointments collection
+      await addDoc(collection(db, 'deletedAppointments'), {
+        ...appointmentData,
+        noShow: true,
+        deletedAt: Timestamp.now()
+      });
+
+      // Update available slots
+      const startTime = appointmentData.timestamp.toDate();
+      const endTime = new Date(startTime.getTime() + (appointmentData.estimatedTime * 60000));
+
+      const slotsQuery = query(
+        collection(db, 'availableSlots'),
+        where('timestamp', '>=', Timestamp.fromDate(startTime)),
+        where('timestamp', '<', Timestamp.fromDate(endTime))
+      );
+
+      const slotsSnapshot = await getDocs(slotsQuery);
+      const updatePromises = slotsSnapshot.docs.map(slotDoc => 
+        updateDoc(doc(db, 'availableSlots', slotDoc.id), { booked: false })
+      );
+
+      await Promise.all(updatePromises);
+
+      // Delete the appointment
+      await deleteDoc(appointmentDoc);
+
+      // Send email notification
+      const mailRef = collection(db, 'mail');
+      await addDoc(mailRef, {
+        to: appointmentData.userInfo.email,
+        message: {
+          subject: "Your Bike Kitchen UvA appointment has been cancelled by our staff",
+          text: `Dear ${appointmentData.userInfo.name},
+
+Your appointment with Bike Kitchen UvA has been cancelled by our mechanics.
+
+Cancelled appointment details:
+Date: ${new Date(appointmentData.timestamp.toDate()).toLocaleDateString()}
+Time: ${new Date(appointmentData.timestamp.toDate()).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
+
+If you have any questions about this cancellation, please contact us at bikekitchenuva@gmail.com.
+
+If you need to make a new booking, please visit our website: https://bikekitchen.nl
+
+Thank you for your understanding.
+
+Best regards,
+The Bike Kitchen UvA Team`,
+          html: `<p>Dear ${appointmentData.userInfo.name},</p>
+
+<p>Your appointment with Bike Kitchen UvA has been cancelled by our mechanics.</p>
+
+<h3>Cancelled appointment details:</h3>
+<ul>
+  <li><strong>Date:</strong> ${new Date(appointmentData.timestamp.toDate()).toLocaleDateString()}</li>
+  <li><strong>Time:</strong> ${new Date(appointmentData.timestamp.toDate()).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}</li>
+</ul>
+
+<p>If you have any questions about this cancellation, please contact us at <a href="mailto:bikekitchenuva@gmail.com">bikekitchenuva@gmail.com</a>.</p>
+
+<p>If you need to make a new booking, please visit our website: <a href="https://bikekitchen.nl">https://bikekitchen.nl</a></p>
+
+<p>Thank you for your understanding.</p>
+
+<p>Best regards,<br>The Bike Kitchen UvA Team</p>`
+        }
+      });
+
+      // Update local state to remove the appointment
+      setAppointments(prevAppointments => 
+        prevAppointments.filter(appointment => appointment.id !== id)
+      );
+      
+      setSelectedAppointment(null);
+      setNotification('Appointment deleted and slot reopened');
+
+      // Clear notification after 3 seconds
+      setTimeout(() => setNotification(''), 3000);
+    } catch (error) {
+      console.error('Error deleting appointment:', error);
+      setNotification('Error deleting appointment');
+      setTimeout(() => setNotification(''), 3000);
+    }
+  };
+
   // Edit Walk-in Record
   const handleWalkInUpdate = async (id, updatedData) => {
     const walkInDoc = doc(db, 'walkIns', id);
@@ -177,6 +270,7 @@ const Dashboard = () => {
           onClose={closeAppointmentModal}
           markAsCompleted={markAsCompleted}
           markAsNoShow={markAsNoShow}
+          deleteAppointment={deleteAppointment}
           undoStatusChange={undoStatusChange}
         />
       )}

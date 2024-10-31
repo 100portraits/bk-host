@@ -166,7 +166,7 @@ const Calendar = () => {
       </div>
       <div className="grid grid-cols-7 md:gap-2 mb-4 gap-0">
         {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-          <div key={day} className="text-center font-bold text-gray-600 dark:text-gray-400">{day}</div>
+          <div key={day} className="text-center font-bold text-gray-600 dark:text-gray-400 mb-2">{day}</div>
         ))}
         {calendarDates.map((date, index) => {
           const dateString = format(date, 'yyyy-MM-dd');
@@ -182,7 +182,7 @@ const Calendar = () => {
             <div
               key={index}
               onClick={() => isCurrentMonth && !isPastDate && !isWeekendOrTuesdayOrFriday && handleDateClick(date)}
-              className={`p-2 text-center cursor-pointer border transition-colors duration-200
+              className={`p-2 text-center cursor-pointer  transition-colors duration-200
                 ${!isCurrentMonth || isPastDate || isWeekendOrTuesdayOrFriday
                   ? 'bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed' 
                   : isUserHost && !isToRemove
@@ -190,7 +190,7 @@ const Calendar = () => {
                     : isSelected || isToRemove
                       ? 'bg-primary-300 text-white hover:bg-primary-400'
                       : 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200'}
-                sm:border sm:border-gray-300 sm:rounded-none sm:p-1
+                 sm:rounded-none sm:p-1
               `}
             >
               <div>{format(date, 'd')}</div>
