@@ -50,7 +50,7 @@ const AppointmentModal = ({ appointment, onClose, markAsCompleted, markAsNoShow,
           <div>Status: {appointment.completed ? 'Completed' : appointment.noShow ? 'No-show' : 'Pending'}</div>
         </div>
 
-        <div className="flex space-x-2">
+        <div className="flex gap-2 flex-wrap">
           {(appointment.completed || appointment.noShow) ? (
             <button
               onClick={() => undoStatusChange(appointment.id)}
