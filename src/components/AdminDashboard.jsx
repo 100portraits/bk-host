@@ -147,20 +147,55 @@ const AdminDashboard = () => {
     );
   };
 
+  // Add this new function to check for existing appointments
+  const checkForExistingAppointments = async (date) => {
+    const dayStart = startOfDay(date);
+    const dayEnd = endOfDay(date);
+
+    const appointmentsRef = collection(db, 'appointments');
+    const q = query(
+      appointmentsRef,
+      where('timestamp', '>=', Timestamp.fromDate(dayStart)),
+      where('timestamp', '<=', Timestamp.fromDate(dayEnd))
+    );
+
+    const querySnapshot = await getDocs(q);
+    return querySnapshot.size;
+  };
+
   const handleSave = async () => {
     setLoading(true);
     setMessage('');
     
     try {
+      // Check dates that are being removed
+      const datesToRemove = selectedDates.filter(dateStr => availableDates.includes(dateStr));
+      
+      // Check for existing appointments on dates being removed
+      for (const dateStr of datesToRemove) {
+        const date = new Date(dateStr);
+        const appointmentCount = await checkForExistingAppointments(date);
+        
+        if (appointmentCount > 0) {
+          const confirmRemoval = window.confirm(
+            `There are ${appointmentCount} existing appointment(s) on ${dateStr}. Are you sure you want to remove this date?`
+          );
+          
+          if (!confirmRemoval) {
+            setLoading(false);
+            return;
+          }
+        }
+      }
+
+      // Proceed with saving changes
       for (const dateStr of selectedDates) {
         const date = new Date(dateStr);
         const isDateAvailable = availableDates.includes(dateStr);
 
         if (isDateAvailable) {
-          // Clear slots if date was available
           await clearSlotsForDate(date);
         } else {
-          // Add slots if date wasn't available
           await addSlotsForDate(date);
         }
       }
