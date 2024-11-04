@@ -3,10 +3,13 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../useAuth';
 import { getAuth, signOut } from 'firebase/auth';
 import DarkModeToggle from './DarkModeToggle';
-import { FaHome, FaClipboardList, FaCalendarAlt, FaUser } from 'react-icons/fa'; // Import icons
+import { FaHome, FaClipboardList, FaCalendarAlt, FaUser, FaCog } from 'react-icons/fa'; // Import icons
 
 const Nav = () => {
-  const { user, userStatus } = useAuth();
+
+  //on load get user from users collection
+
+  const { user, userStatus, role } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = async () => {
@@ -43,6 +46,12 @@ const Nav = () => {
                   <span className="hidden lg:inline">Profile</span>
                   <FaUser className="lg:hidden" />
                 </Link>
+                {role === 'admin' && (
+                  <Link to="/admin" className="flex items-center px-3 py-2 rounded-md text-sm lg:text-md font-medium text-black dark:text-gray-200 hover:text-primary-900 dark:hover:text-white hover:bg-primary-50 dark:hover:bg-gray-700">
+                    <span className="hidden lg:inline">Admin</span>
+                    <FaCog className="lg:hidden" />
+                  </Link>
+                )}
               </>
             )}
           </div>

@@ -11,9 +11,10 @@ import Calendar from './components/Calendar'; // Import the Calendar component
 import { useAuth } from './useAuth';
 import Nav from './components/Nav';
 import { ThemeProvider, useTheme } from './ThemeContext.jsx';
+import AdminDashboard from './components/AdminDashboard';
 
 const AppContent = () => {
-  const { user, userStatus, loading } = useAuth();
+  const { user, userStatus, role, loading } = useAuth();
   const { isDarkMode } = useTheme();
 
   if (loading) {
@@ -87,6 +88,18 @@ const AppContent = () => {
             element={
               user && userStatus === 'approved' ? (
                 <Calendar />
+              ) : (
+                <Navigate to="/" replace />
+              )
+            }
+          />
+
+          {/* Admin Dashboard Route */}
+          <Route
+            path="/admin"
+            element={
+              user && userStatus === 'approved' && role === 'admin' ? (
+                <AdminDashboard />
               ) : (
                 <Navigate to="/" replace />
               )

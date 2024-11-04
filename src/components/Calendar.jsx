@@ -182,7 +182,7 @@ const Calendar = () => {
             <div
               key={index}
               onClick={() => isCurrentMonth && !isPastDate && !isWeekendOrTuesdayOrFriday && handleDateClick(date)}
-              className={`p-2 text-center cursor-pointer  transition-colors duration-200
+              className={`p-2 text-center cursor-pointer  transition-colors duration-200 md:rounded-lg
                 ${!isCurrentMonth || isPastDate || isWeekendOrTuesdayOrFriday
                   ? 'bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed' 
                   : isUserHost && !isToRemove
