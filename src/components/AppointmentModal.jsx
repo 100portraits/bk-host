@@ -17,19 +17,19 @@ const AppointmentModal = ({ appointment, onClose, markAsCompleted, markAsNoShow,
       <div className="bg-white dark:bg-gray-800 p-6 rounded-lg max-w-2xl w-full">
         <h2 className="text-2xl font-bold mb-4 text-gray-900 dark:text-gray-100">Appointment Details</h2>
         <div className="mb-4 text-gray-700 dark:text-gray-300">
-          <div className="font-semibold text-lg">Name: {appointment.userInfo.name}</div>
-          <div>Phone: {appointment.userInfo.phoneNumber}</div>
-          <div>Email: {appointment.userInfo.email}</div>
+          <div className="font-semibold text-lg">Name: {appointment?.userInfo?.name ?? 'N/A'}</div>
+          <div>Phone: {appointment?.userInfo?.phoneNumber ?? 'N/A'}</div>
+          <div>Email: {appointment?.userInfo?.email ?? 'N/A'}</div>
           
           <h3 className="font-semibold mt-2">Booking Details:</h3>
-          {Object.entries(appointment.bookingSelection).map(([key, value]) => (
+          {appointment?.bookingSelection && Object.entries(appointment.bookingSelection).map(([key, value]) => (
             <div key={key}>
-              <span className="font-medium">{key}:</span> {value}
+              <span className="font-medium">{key}:</span> {value ?? 'N/A'}
             </div>
           ))}
 
-          <div>Estimated Time: {appointment.estimatedTime} minutes</div>
-          <div>Experience Level: {appointment.experience}</div>
+          <div>Estimated Time: {appointment?.estimatedTime ?? 'N/A'} {appointment?.estimatedTime ? 'minutes' : ''}</div>
+          <div>Experience Level: {appointment?.experience ?? 'N/A'}</div>
 
           {/* Visual representation of experience */}
           <div className="flex space-x-1 mt-2">
@@ -37,7 +37,7 @@ const AppointmentModal = ({ appointment, onClose, markAsCompleted, markAsNoShow,
               <span
                 key={index}
                 className={`inline-block w-4 h-4 rounded-full ${
-                  index < parseInt(appointment.experience) 
+                  index < parseInt(appointment?.experience ?? 0) 
                     ? 'bg-primary-500' 
                     : 'bg-primary-200 dark:bg-primary-700'
                 }`}
@@ -45,13 +45,13 @@ const AppointmentModal = ({ appointment, onClose, markAsCompleted, markAsNoShow,
             ))}
           </div>
 
-          <div>Date: {new Date(appointment.selectedDate).toLocaleDateString()}</div>
-          <div>Time: {appointment.selectedTime}</div>
-          <div>Status: {appointment.completed ? 'Completed' : appointment.noShow ? 'No-show' : 'Pending'}</div>
+          <div>Date: {appointment?.selectedDate ? new Date(appointment.selectedDate).toLocaleDateString() : 'N/A'}</div>
+          <div>Time: {appointment?.selectedTime ?? 'N/A'}</div>
+          <div>Status: {appointment?.completed ? 'Completed' : appointment?.noShow ? 'No-show' : 'Pending'}</div>
         </div>
 
         <div className="flex gap-2 flex-wrap">
-          {(appointment.completed || appointment.noShow) ? (
+          {(appointment?.completed || appointment?.noShow) ? (
             <button
               onClick={() => undoStatusChange(appointment.id)}
               className="btn btn-secondary"

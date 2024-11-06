@@ -259,7 +259,7 @@ The Bike Kitchen UvA Team`,
             onClick={() => openAppointmentModal(appointment)}
           >
             <div className="font-semibold text-primary-700 dark:text-primary-300">{appointment.selectedTime}</div>
-            <div className="text-gray-600 dark:text-gray-200">{appointment.userInfo.name}</div>
+            <div className="text-gray-600 dark:text-gray-200">{appointment?.userInfo?.name ?? 'N/A'}</div>
           </div>
         ))}
       </div>
