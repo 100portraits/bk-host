@@ -144,8 +144,20 @@ const Calendar = () => {
     setCurrentMonth(prevMonth => addMonths(prevMonth, 1));
   };
 
+  const isHolidayClosure = (date) => {
+    const month = date.getMonth();
+    const day = date.getDate();
+    return (month === 11 && day >= 23) || // December
+           (month === 0 && day <= 2);     // January
+  };
+
   return (
-    <div className="p-6 bg-white dark:bg-gray-800 shadow-lg rounded-lg mb-6">
+    <div className="p-6 bg-white dark:bg-gray-800 shadow-lg rounded-lg mb-6 max-h-[100vh] overflow-y-auto">
+      <div className="mb-6 p-4 bg-red-100 dark:bg-red-900 border-l-4 border-red-500 text-red-700 dark:text-red-200">
+        <p className="font-bold">Holiday Closures!</p>
+        <p>The Bike Kitchen will be closed from December 23rd to January 2nd. Happy Holidays! 🎄</p>
+      </div>
+
       <h1 className="text-3xl font-bold mb-6 text-primary-700 dark:text-gray-200">Availability Calendar</h1>
       <div className="flex justify-between items-center mb-4">
         <button
@@ -177,26 +189,29 @@ const Calendar = () => {
           const isCurrentMonth = isSameMonth(date, currentMonth);
           const isPastDate = isBefore(date, startOfDay(new Date()));
           const isWeekendOrTuesdayOrFriday = isWeekend(date) || isTuesday(date) || isFriday(date);
+          const isHoliday = isHolidayClosure(date);
           
           return (
             <div
               key={index}
-              onClick={() => isCurrentMonth && !isPastDate && !isWeekendOrTuesdayOrFriday && handleDateClick(date)}
-              className={`p-2 text-center cursor-pointer  transition-colors duration-200 md:rounded-lg
-                ${!isCurrentMonth || isPastDate || isWeekendOrTuesdayOrFriday
+              onClick={() => isCurrentMonth && !isPastDate && !isWeekendOrTuesdayOrFriday && !isHoliday && handleDateClick(date)}
+              className={`p-2 text-center cursor-pointer transition-colors duration-200 md:rounded-lg
+                ${!isCurrentMonth || isPastDate || isWeekendOrTuesdayOrFriday || isHoliday
                   ? 'bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed' 
                   : isUserHost && !isToRemove
                     ? 'bg-primary-500 text-white'
                     : isSelected || isToRemove
                       ? 'bg-primary-300 text-white hover:bg-primary-400'
                       : 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200'}
-                 sm:rounded-none sm:p-1
+                ${isHoliday ? 'bg-gradient-to-br from-red-500 to-green-500 text-white dark:text-white' : ''}
+                sm:rounded-none sm:p-1
               `}
             >
               <div>{format(date, 'd')}</div>
               {shift?.hosts && (
                 <div className="text-xs mt-1">
-                  {shift.hosts.map(host => usersMap[host] || host).join(', ')} {/* Display user's name */}
+                  {!isHoliday && shift.hosts.map(host => usersMap[host] || host).join(', ')} {/* Display user's name */}
+                  {isHoliday && '🎄'}
                 </div>
               )}
             </div>
