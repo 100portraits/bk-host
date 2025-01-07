@@ -57,16 +57,55 @@ const Dashboard = () => {
 
   // Mark appointment as completed and update state
   const markAsCompleted = async (id) => {
-    const appointmentDoc = doc(db, 'appointments', id);
-    await updateDoc(appointmentDoc, { completed: true });
+    try {
+      const appointmentDoc = doc(db, 'appointments', id);
+      const appointmentSnapshot = await getDoc(appointmentDoc);
+      const appointmentData = appointmentSnapshot.data();
 
-    setAppointments((prevAppointments) =>
-      prevAppointments.map((appointment) =>
-        appointment.id === id ? { ...appointment, completed: true } : appointment
-      )
-    );
+      await updateDoc(appointmentDoc, { completed: true });
 
-    setSelectedAppointment((prev) => ({ ...prev, completed: true })); // Update selected appointment state
+      // Send completion email
+      const mailRef = collection(db, 'mail');
+      await addDoc(mailRef, {
+        to: appointmentData.userInfo.email,
+        message: {
+          subject: "Bedankt voor je bezoek aan Bike Kitchen UvA!",
+          text: `Hey sleutelaar!
+
+Bedankt voor je tijd! Is het allemaal gelukt met de reparatie?
+
+Laat hier een review achter over hoe je het bezoek ervaren hebt:
+https://forms.gle/tH5tM1xyadMwgT9T9
+
+Wil je op de hoogte blijven van de Bike Kitchen UvA of wil je onderdeel worden van de community waarmee je bijdraagt aan de ondersteuning van het project, neem dan een kijkje op https://student.uva.nl/en/topics/repair-your-bike-at-the-bike-kitchen
+
+Hopelijk tot snel! Boek uw volgende afspraak hier: https://bikekitchen.nl
+
+Vriendelijke groet,
+
+Het Bike Kitchen UvA-team`,
+          html: `<div style="font-family: Arial, sans-serif;">
+  <h2>Hey sleutelaar!</h2>
+  <p>Bedankt voor je tijd! Is het allemaal gelukt met de reparatie?</p>
+  <p>Laat hier een review achter over hoe je het bezoek ervaren hebt:</p>
+  <p><a href="https://forms.gle/tH5tM1xyadMwgT9T9" style="display: inline-block; padding: 10px 20px; background-color: #ef4444; color: white; text-decoration: none; border-radius: 5px;">Geef je feedback</a></p>
+  <p>Wil je op de hoogte blijven van de Bike Kitchen UvA of wil je onderdeel worden van de community waarmee je bijdraagt aan de ondersteuning van het project, neem dan een kijkje op <a href="https://student.uva.nl/en/topics/repair-your-bike-at-the-bike-kitchen" style="color: #ef4444; text-decoration: underline;">student.uva.nl/en/topics/repair-your-bike-at-the-bike-kitchen</a></p>
+  <p>Hopelijk tot snel! <a href="https://bikekitchen.nl" style="color: #ef4444; text-decoration: underline;">Boek uw volgende afspraak hier</a>.</p>
+  <p>Vriendelijke groet,<br>Het Bike Kitchen UvA-team</p>
+</div>`
+        }
+      });
+
+      setAppointments((prevAppointments) =>
+        prevAppointments.map((appointment) =>
+          appointment.id === id ? { ...appointment, completed: true } : appointment
+        )
+      );
+
+      setSelectedAppointment((prev) => ({ ...prev, completed: true }));
+    } catch (error) {
+      console.error('Error marking appointment as completed:', error);
+    }
   };
 
   // Mark appointment as no-show and update state
