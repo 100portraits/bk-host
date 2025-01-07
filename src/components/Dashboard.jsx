@@ -83,7 +83,24 @@ Hopelijk tot snel! Boek uw volgende afspraak hier: https://bikekitchen.nl
 
 Vriendelijke groet,
 
-Het Bike Kitchen UvA-team`,
+Het Bike Kitchen UvA-team
+
+---
+
+Hey mechanic!
+
+Thank you for your time! Did everything work out with the repair?
+
+Please leave a review about your experience here:
+https://forms.gle/tH5tM1xyadMwgT9T9
+
+Want to stay updated about Bike Kitchen UvA or become part of the community that helps support the project? Take a look at https://student.uva.nl/en/topics/repair-your-bike-at-the-bike-kitchen
+
+Hope to see you soon! Book your next appointment here: https://bikekitchen.nl
+
+Best regards,
+
+The Bike Kitchen UvA team`,
           html: `<div style="font-family: Arial, sans-serif;">
   <h2>Hey sleutelaar!</h2>
   <p>Bedankt voor je tijd! Is het allemaal gelukt met de reparatie?</p>
@@ -92,6 +109,16 @@ Het Bike Kitchen UvA-team`,
   <p>Wil je op de hoogte blijven van de Bike Kitchen UvA of wil je onderdeel worden van de community waarmee je bijdraagt aan de ondersteuning van het project, neem dan een kijkje op <a href="https://student.uva.nl/en/topics/repair-your-bike-at-the-bike-kitchen" style="color: #ef4444; text-decoration: underline;">student.uva.nl/en/topics/repair-your-bike-at-the-bike-kitchen</a></p>
   <p>Hopelijk tot snel! <a href="https://bikekitchen.nl" style="color: #ef4444; text-decoration: underline;">Boek uw volgende afspraak hier</a>.</p>
   <p>Vriendelijke groet,<br>Het Bike Kitchen UvA-team</p>
+
+  <hr style="margin: 30px 0; border: none; border-top: 1px solid #ddd;">
+
+  <h2>Hey mechanic!</h2>
+  <p>Thank you for your time! Did everything work out with the repair?</p>
+  <p>Please leave a review about your experience here:</p>
+  <p><a href="https://forms.gle/tH5tM1xyadMwgT9T9" style="display: inline-block; padding: 10px 20px; background-color: #ef4444; color: white; text-decoration: none; border-radius: 5px;">Give your feedback</a></p>
+  <p>Want to stay updated about Bike Kitchen UvA or become part of the community that helps support the project? Take a look at <a href="https://student.uva.nl/en/topics/repair-your-bike-at-the-bike-kitchen" style="color: #ef4444; text-decoration: underline;">student.uva.nl/en/topics/repair-your-bike-at-the-bike-kitchen</a></p>
+  <p>Hope to see you soon! <a href="https://bikekitchen.nl" style="color: #ef4444; text-decoration: underline;">Book your next appointment here</a>.</p>
+  <p>Best regards,<br>The Bike Kitchen UvA team</p>
 </div>`
         }
       });
