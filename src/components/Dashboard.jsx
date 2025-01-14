@@ -75,7 +75,7 @@ const Dashboard = () => {
 Bedankt voor je tijd! Is het allemaal gelukt met de reparatie?
 
 Laat hier een review achter over hoe je het bezoek ervaren hebt:
-https://forms.gle/tH5tM1xyadMwgT9T9
+https://forms.gle/AQcZFAddzHWT7dn26
 
 Wil je op de hoogte blijven van de Bike Kitchen UvA of wil je onderdeel worden van de community waarmee je bijdraagt aan de ondersteuning van het project, neem dan een kijkje op https://student.uva.nl/en/topics/repair-your-bike-at-the-bike-kitchen
 
@@ -92,7 +92,7 @@ Hey mechanic!
 Thank you for your time! Did everything work out with the repair?
 
 Please leave a review about your experience here:
-https://forms.gle/tH5tM1xyadMwgT9T9
+https://forms.gle/AQcZFAddzHWT7dn26
 
 Want to stay updated about Bike Kitchen UvA or become part of the community that helps support the project? Take a look at https://student.uva.nl/en/topics/repair-your-bike-at-the-bike-kitchen
 
@@ -105,7 +105,7 @@ The Bike Kitchen UvA team`,
   <h2>Hey sleutelaar!</h2>
   <p>Bedankt voor je tijd! Is het allemaal gelukt met de reparatie?</p>
   <p>Laat hier een review achter over hoe je het bezoek ervaren hebt:</p>
-  <p><a href="https://forms.gle/tH5tM1xyadMwgT9T9" style="display: inline-block; padding: 10px 20px; background-color: #ef4444; color: white; text-decoration: none; border-radius: 5px;">Geef je feedback</a></p>
+  <p><a href="https://forms.gle/AQcZFAddzHWT7dn26" style="display: inline-block; padding: 10px 20px; background-color: #ef4444; color: white; text-decoration: none; border-radius: 5px;">Geef je feedback</a></p>
   <p>Wil je op de hoogte blijven van de Bike Kitchen UvA of wil je onderdeel worden van de community waarmee je bijdraagt aan de ondersteuning van het project, neem dan een kijkje op <a href="https://student.uva.nl/en/topics/repair-your-bike-at-the-bike-kitchen" style="color: #ef4444; text-decoration: underline;">student.uva.nl/en/topics/repair-your-bike-at-the-bike-kitchen</a></p>
   <p>Hopelijk tot snel! <a href="https://bikekitchen.nl" style="color: #ef4444; text-decoration: underline;">Boek uw volgende afspraak hier</a>.</p>
   <p>Vriendelijke groet,<br>Het Bike Kitchen UvA-team</p>
@@ -115,7 +115,7 @@ The Bike Kitchen UvA team`,
   <h2>Hey mechanic!</h2>
   <p>Thank you for your time! Did everything work out with the repair?</p>
   <p>Please leave a review about your experience here:</p>
-  <p><a href="https://forms.gle/tH5tM1xyadMwgT9T9" style="display: inline-block; padding: 10px 20px; background-color: #ef4444; color: white; text-decoration: none; border-radius: 5px;">Give your feedback</a></p>
+  <p><a href="https://forms.gle/AQcZFAddzHWT7dn26" style="display: inline-block; padding: 10px 20px; background-color: #ef4444; color: white; text-decoration: none; border-radius: 5px;">Give your feedback</a></p>
   <p>Want to stay updated about Bike Kitchen UvA or become part of the community that helps support the project? Take a look at <a href="https://student.uva.nl/en/topics/repair-your-bike-at-the-bike-kitchen" style="color: #ef4444; text-decoration: underline;">student.uva.nl/en/topics/repair-your-bike-at-the-bike-kitchen</a></p>
   <p>Hope to see you soon! <a href="https://bikekitchen.nl" style="color: #ef4444; text-decoration: underline;">Book your next appointment here</a>.</p>
   <p>Best regards,<br>The Bike Kitchen UvA team</p>
