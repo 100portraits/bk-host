@@ -299,6 +299,24 @@ The Bike Kitchen UvA Team`,
     setSelectedAppointment(null);
   };
 
+  // Mark appointment as "No Cure No Pay" and update state
+  const markAsNoCureNoPay = async (id) => {
+    try {
+      const appointmentDoc = doc(db, 'appointments', id);
+      await updateDoc(appointmentDoc, { noCure: true });
+
+      setAppointments((prevAppointments) =>
+        prevAppointments.map((appointment) =>
+          appointment.id === id ? { ...appointment, noCure: true } : appointment
+        )
+      );
+
+      setSelectedAppointment((prev) => ({ ...prev, noCure: true }));
+    } catch (error) {
+      console.error('Error marking appointment as No Cure No Pay:', error);
+    }
+  };
+
   return (
     <div className="p-6 bg-white dark:bg-gray-800 shadow-lg rounded-b-lg mb-6">
       {notification && <div className="notification">{notification}</div>} {/* Display notification */}
@@ -338,6 +356,7 @@ The Bike Kitchen UvA Team`,
           markAsNoShow={markAsNoShow}
           deleteAppointment={deleteAppointment}
           undoStatusChange={undoStatusChange}
+          markAsNoCureNoPay={markAsNoCureNoPay}
         />
       )}
 

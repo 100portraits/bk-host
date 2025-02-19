@@ -164,10 +164,11 @@ const Calendar = () => {
 
   return (
     <div className="p-6 bg-white dark:bg-gray-800 shadow-lg rounded-lg mb-6 max-h-[100vh] overflow-y-auto">
-      <div className="mb-6 p-4 bg-red-100 dark:bg-red-900 border-l-4 border-red-500 text-red-700 dark:text-red-200">
+      {/* Remove the holiday closure message */}
+      {/* <div className="mb-6 p-4 bg-red-100 dark:bg-red-900 border-l-4 border-red-500 text-red-700 dark:text-red-200">
         <p className="font-bold">Holiday Closures!</p>
         <p>The Bike Kitchen will be closed from December 23rd to January 2nd. Happy Holidays! 🎄</p>
-      </div>
+      </div> */}
 
       <h1 className="text-3xl font-bold mb-6 text-primary-700 dark:text-gray-200">Availability Calendar</h1>
       <div className="flex justify-between items-center mb-4">

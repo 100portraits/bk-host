@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-const AppointmentModal = ({ appointment, onClose, markAsCompleted, markAsNoShow, undoStatusChange, deleteAppointment }) => {
+const AppointmentModal = ({ appointment, onClose, markAsCompleted, markAsNoShow, undoStatusChange, deleteAppointment, markAsNoCureNoPay }) => {
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
 
   const handleDelete = () => {
@@ -47,7 +47,7 @@ const AppointmentModal = ({ appointment, onClose, markAsCompleted, markAsNoShow,
 
           <div>Date: {appointment?.selectedDate ? new Date(appointment.selectedDate).toLocaleDateString() : 'N/A'}</div>
           <div>Time: {appointment?.selectedTime ?? 'N/A'}</div>
-          <div>Status: {appointment?.completed ? 'Completed' : appointment?.noShow ? 'No-show' : 'Pending'}</div>
+          <div>Status: {appointment?.completed ? 'Completed' : appointment?.noShow ? 'No-show' : appointment?.noCure ? 'No Cure No Pay' : 'Pending'}</div>
         </div>
 
         <div className="flex gap-2 flex-wrap">
@@ -72,6 +72,12 @@ const AppointmentModal = ({ appointment, onClose, markAsCompleted, markAsNoShow,
               >
                 No-show
               </button>
+              <button
+                onClick={() => markAsNoCureNoPay(appointment.id)}
+                className="btn bg-yellow-500 hover:bg-yellow-600 text-white dark:bg-yellow-600 dark:hover:bg-yellow-700"
+              >
+                No Cure No Pay
+              </button>
             </>
           )}
           <button
@@ -82,7 +88,7 @@ const AppointmentModal = ({ appointment, onClose, markAsCompleted, markAsNoShow,
           </button>
           <button
             onClick={onClose}
-            className="btn bg-gray-500 hover:bg-gray-600 dark:bg-gray-600 dark:hover:bg-gray-700"
+            className="btn bg-gray-500 hover:bg-gray-600 text-white dark:bg-gray-600 dark:hover:bg-gray-700"
           >
             Close
           </button>
