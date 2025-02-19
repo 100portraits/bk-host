@@ -211,6 +211,36 @@ const AdminDashboard = () => {
     }
   };
 
+  // Function to fetch data from Firestore
+  const fetchData = async (collectionName) => {
+    const collectionRef = collection(db, collectionName);
+    const querySnapshot = await getDocs(collectionRef);
+    return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  };
+
+  // Function to download data as JSON
+  const downloadData = async () => {
+    try {
+      const appointments = await fetchData('appointments');
+      const walkIns = await fetchData('walkIns');
+
+      const data = {
+        appointments,
+        walkIns
+      };
+
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'data.json';
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error downloading data:', error);
+    }
+  };
+
   return (
     <div className="p-6 bg-white dark:bg-gray-800 shadow-lg rounded-lg">
       <h1 className="text-3xl font-bold mb-6 text-primary-700 dark:text-gray-200">Admin Dashboard</h1>
@@ -307,6 +337,13 @@ const AdminDashboard = () => {
           </div>
         </div>
       </div>
+
+      <button
+        onClick={downloadData}
+        className="px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
+      >
+        Download Data
+      </button>
     </div>
   );
 };
