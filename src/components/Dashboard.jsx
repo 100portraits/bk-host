@@ -77,7 +77,7 @@ Bedankt voor je tijd! Is het allemaal gelukt met de reparatie?
 Laat hier een review achter over hoe je het bezoek ervaren hebt:
 https://forms.gle/AQcZFAddzHWT7dn26
 
-Wil je op de hoogte blijven van de Bike Kitchen UvA of wil je onderdeel worden van de community waarmee je bijdraagt aan de ondersteuning van het project, neem dan een kijkje op https://student.uva.nl/en/topics/repair-your-bike-at-the-bike-kitchen
+Ben je geïnteresseerd in workshops, andere evenementen en het ondersteunen van de Bike Kitchen (inclusief gratis gebruik van de ruimte!)? Word dan lid voor slechts 4 euro per maand. Meer informatie vind je hier: https://doneren.auf.nl/bike-kitchen
 
 Hopelijk tot snel! Boek uw volgende afspraak hier: https://bikekitchen.nl
 
@@ -94,7 +94,7 @@ Thank you for your time! Did everything work out with the repair?
 Please leave a review about your experience here:
 https://forms.gle/AQcZFAddzHWT7dn26
 
-Want to stay updated about Bike Kitchen UvA or become part of the community that helps support the project? Take a look at https://student.uva.nl/en/topics/repair-your-bike-at-the-bike-kitchen
+Interested in participating in workshops, other events and supporting the Bike Kitchen (including free use of the space!)? Consider becoming a member for just 4 euros per month. More information here: https://doneren.auf.nl/bike-kitchen
 
 Hope to see you soon! Book your next appointment here: https://bikekitchen.nl
 
@@ -106,7 +106,7 @@ The Bike Kitchen UvA team`,
   <p>Bedankt voor je tijd! Is het allemaal gelukt met de reparatie?</p>
   <p>Laat hier een review achter over hoe je het bezoek ervaren hebt:</p>
   <p><a href="https://forms.gle/AQcZFAddzHWT7dn26" style="display: inline-block; padding: 10px 20px; background-color: #ef4444; color: white; text-decoration: none; border-radius: 5px;">Geef je feedback</a></p>
-  <p>Wil je op de hoogte blijven van de Bike Kitchen UvA of wil je onderdeel worden van de community waarmee je bijdraagt aan de ondersteuning van het project, neem dan een kijkje op <a href="https://student.uva.nl/en/topics/repair-your-bike-at-the-bike-kitchen" style="color: #ef4444; text-decoration: underline;">student.uva.nl/en/topics/repair-your-bike-at-the-bike-kitchen</a></p>
+  <p>Ben je geïnteresseerd in workshops, andere evenementen en het ondersteunen van de Bike Kitchen (inclusief gratis gebruik van de ruimte!)? Word dan lid voor slechts 4 euro per maand. Meer informatie vind je <a href="https://doneren.auf.nl/bike-kitchen" style="color: #ef4444; text-decoration: underline;">hier</a>.</p>
   <p>Hopelijk tot snel! <a href="https://bikekitchen.nl" style="color: #ef4444; text-decoration: underline;">Boek uw volgende afspraak hier</a>.</p>
   <p>Vriendelijke groet,<br>Het Bike Kitchen UvA-team</p>
 
@@ -116,7 +116,7 @@ The Bike Kitchen UvA team`,
   <p>Thank you for your time! Did everything work out with the repair?</p>
   <p>Please leave a review about your experience here:</p>
   <p><a href="https://forms.gle/AQcZFAddzHWT7dn26" style="display: inline-block; padding: 10px 20px; background-color: #ef4444; color: white; text-decoration: none; border-radius: 5px;">Give your feedback</a></p>
-  <p>Want to stay updated about Bike Kitchen UvA or become part of the community that helps support the project? Take a look at <a href="https://student.uva.nl/en/topics/repair-your-bike-at-the-bike-kitchen" style="color: #ef4444; text-decoration: underline;">student.uva.nl/en/topics/repair-your-bike-at-the-bike-kitchen</a></p>
+  <p>Interested in participating in workshops, other events and supporting the Bike Kitchen (including free use of the space!)? Consider becoming a member for just 4 euros per month. More information <a href="https://doneren.auf.nl/bike-kitchen" style="color: #ef4444; text-decoration: underline;">here</a>.</p>
   <p>Hope to see you soon! <a href="https://bikekitchen.nl" style="color: #ef4444; text-decoration: underline;">Book your next appointment here</a>.</p>
   <p>Best regards,<br>The Bike Kitchen UvA team</p>
 </div>`
