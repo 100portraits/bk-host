@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-const AppointmentModal = ({ appointment, onClose, markAsCompleted, markAsNoShow, undoStatusChange, deleteAppointment, markAsNoCureNoPay }) => {
+const AppointmentModal = ({ appointment, onClose, togglePaidStatus, deleteAppointment }) => {
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
 
   const handleDelete = () => {
@@ -10,6 +10,12 @@ const AppointmentModal = ({ appointment, onClose, markAsCompleted, markAsNoShow,
   const confirmDelete = () => {
     deleteAppointment(appointment.id);
     setShowDeleteConfirmation(false);
+  };
+
+  const getStatusText = () => {
+    if (appointment?.paid === 1) return 'Paid';
+    if (appointment?.member === true) return 'Community Member';
+    return 'Not Paid';
   };
 
   return (
@@ -47,38 +53,24 @@ const AppointmentModal = ({ appointment, onClose, markAsCompleted, markAsNoShow,
 
           <div>Date: {appointment?.selectedDate ? new Date(appointment.selectedDate).toLocaleDateString() : 'N/A'}</div>
           <div>Time: {appointment?.selectedTime ?? 'N/A'}</div>
-          <div>Status: {appointment?.completed ? 'Completed' : appointment?.noShow ? 'No-show' : appointment?.noCure ? 'No Cure No Pay' : 'Pending'}</div>
+          <div>Status: {getStatusText()}</div>
         </div>
 
         <div className="flex gap-2 flex-wrap">
-          {(appointment?.completed || appointment?.noShow) ? (
+          {appointment?.paid === 1 ? (
             <button
-              onClick={() => undoStatusChange(appointment.id)}
+              onClick={() => togglePaidStatus(appointment.id, false)}
               className="btn btn-secondary"
             >
-              Undo
+              Mark as Not Paid
             </button>
           ) : (
-            <>
-              <button
-                onClick={() => markAsCompleted(appointment.id)}
-                className="btn btn-primary"
-              >
-                Mark as Completed
-              </button>
-              <button
-                onClick={() => markAsNoShow(appointment.id)}
-                className="btn btn-secondary"
-              >
-                No-show
-              </button>
-              <button
-                onClick={() => markAsNoCureNoPay(appointment.id)}
-                className="btn bg-yellow-500 hover:bg-yellow-600 text-white dark:bg-yellow-600 dark:hover:bg-yellow-700"
-              >
-                No Cure No Pay
-              </button>
-            </>
+            <button
+              onClick={() => togglePaidStatus(appointment.id, true)}
+              className="btn btn-primary"
+            >
+              Mark as Paid
+            </button>
           )}
           <button
             onClick={handleDelete}

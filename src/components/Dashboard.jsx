@@ -48,29 +48,32 @@ const Dashboard = () => {
   // Count completed repairs (appointments and walk-ins)
   useEffect(() => {
     const countCompletedRepairs = () => {
-      const completedAppointments = appointments.filter(appointment => appointment.completed).length;
+      const completedAppointments = appointments.filter(appointment => appointment.paid === 1).length;
       const completedWalkIns = walkIns.length; // Assuming all walk-ins are completed when added
       return completedAppointments + completedWalkIns;
     };
     setRepairCount(countCompletedRepairs());
   }, [appointments, walkIns]);
 
-  // Mark appointment as completed and update state
-  const markAsCompleted = async (id) => {
+  // Toggle appointment paid status (1 for paid, 0 for not paid)
+  const togglePaidStatus = async (id, isPaid) => {
     try {
       const appointmentDoc = doc(db, 'appointments', id);
       const appointmentSnapshot = await getDoc(appointmentDoc);
       const appointmentData = appointmentSnapshot.data();
-
-      await updateDoc(appointmentDoc, { completed: true });
-
-      // Send completion email
-      const mailRef = collection(db, 'mail');
-      await addDoc(mailRef, {
-        to: appointmentData.userInfo.email,
-        message: {
-          subject: "Bedankt voor je bezoek aan Bike Kitchen UvA!",
-          text: `Hey sleutelaar!
+      
+      // Set paid status to 1 or 0
+      const paidValue = isPaid ? 1 : 0;
+      await updateDoc(appointmentDoc, { paid: paidValue });
+      
+      // Send completion email if marked as paid
+      if (isPaid) {
+        const mailRef = collection(db, 'mail');
+        await addDoc(mailRef, {
+          to: appointmentData.userInfo.email,
+          message: {
+            subject: "Bedankt voor je bezoek aan Bike Kitchen UvA!",
+            text: `Hey sleutelaar!
 
 Bedankt voor je tijd! Is het allemaal gelukt met de reparatie?
 
@@ -101,7 +104,7 @@ Hope to see you soon! Book your next appointment here: https://bikekitchen.nl
 Best regards,
 
 The Bike Kitchen UvA team`,
-          html: `<div style="font-family: Arial, sans-serif;">
+            html: `<div style="font-family: Arial, sans-serif;">
   <h2>Hey sleutelaar!</h2>
   <p>Bedankt voor je tijd! Is het allemaal gelukt met de reparatie?</p>
   <p>Laat hier een review achter over hoe je het bezoek ervaren hebt:</p>
@@ -120,47 +123,29 @@ The Bike Kitchen UvA team`,
   <p>Hope to see you soon! <a href="https://bikekitchen.nl" style="color: #ef4444; text-decoration: underline;">Book your next appointment here</a>.</p>
   <p>Best regards,<br>The Bike Kitchen UvA team</p>
 </div>`
-        }
-      });
+          }
+        });
+      }
 
+      // Update appointments state
       setAppointments((prevAppointments) =>
         prevAppointments.map((appointment) =>
-          appointment.id === id ? { ...appointment, completed: true } : appointment
+          appointment.id === id ? { ...appointment, paid: paidValue } : appointment
         )
       );
 
-      setSelectedAppointment((prev) => ({ ...prev, completed: true }));
+      // Update selected appointment if open
+      setSelectedAppointment((prev) => 
+        prev && prev.id === id ? { ...prev, paid: paidValue } : prev
+      );
+      
+      setNotification(`Appointment marked as ${isPaid ? 'paid' : 'not paid'}`);
+      setTimeout(() => setNotification(''), 3000);
     } catch (error) {
-      console.error('Error marking appointment as completed:', error);
+      console.error('Error updating payment status:', error);
+      setNotification('Error updating payment status');
+      setTimeout(() => setNotification(''), 3000);
     }
-  };
-
-  // Mark appointment as no-show and update state
-  const markAsNoShow = async (id) => {
-    const appointmentDoc = doc(db, 'appointments', id);
-    await updateDoc(appointmentDoc, { noShow: true });
-
-    setAppointments((prevAppointments) =>
-      prevAppointments.map((appointment) =>
-        appointment.id === id ? { ...appointment, noShow: true } : appointment
-      )
-    );
-
-    setSelectedAppointment((prev) => ({ ...prev, noShow: true })); // Update selected appointment state
-  };
-
-  // Undo appointment status and revert to pending
-  const undoStatusChange = async (id) => {
-    const appointmentDoc = doc(db, 'appointments', id);
-    await updateDoc(appointmentDoc, { completed: false, noShow: false });
-
-    setAppointments((prevAppointments) =>
-      prevAppointments.map((appointment) =>
-        appointment.id === id ? { ...appointment, completed: false, noShow: false } : appointment
-      )
-    );
-
-    setSelectedAppointment((prev) => ({ ...prev, completed: false, noShow: false })); // Update selected appointment state
   };
 
   // Delete appointment and re-open available slot
@@ -173,7 +158,6 @@ The Bike Kitchen UvA team`,
       // Add to deletedAppointments collection
       await addDoc(collection(db, 'deletedAppointments'), {
         ...appointmentData,
-        noShow: true,
         deletedAt: Timestamp.now()
       });
 
@@ -299,24 +283,6 @@ The Bike Kitchen UvA Team`,
     setSelectedAppointment(null);
   };
 
-  // Mark appointment as "No Cure No Pay" and update state
-  const markAsNoCureNoPay = async (id) => {
-    try {
-      const appointmentDoc = doc(db, 'appointments', id);
-      await updateDoc(appointmentDoc, { noCure: true });
-
-      setAppointments((prevAppointments) =>
-        prevAppointments.map((appointment) =>
-          appointment.id === id ? { ...appointment, noCure: true } : appointment
-        )
-      );
-
-      setSelectedAppointment((prev) => ({ ...prev, noCure: true }));
-    } catch (error) {
-      console.error('Error marking appointment as No Cure No Pay:', error);
-    }
-  };
-
   return (
     <div className="p-6 bg-white dark:bg-gray-800 shadow-lg rounded-b-lg mb-6">
       {notification && <div className="notification">{notification}</div>} {/* Display notification */}
@@ -336,27 +302,41 @@ The Bike Kitchen UvA Team`,
       </div>
       <h3 className="text-xl font-semibold text-black dark:text-gray-200 mb-4">Today's Appointments</h3>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-        {appointments.map(appointment => (
-          <div 
-            key={appointment.id} 
-            className="p-4 bg-white dark:bg-gray-700 shadow-md rounded-lg cursor-pointer hover:shadow-lg transition-shadow duration-300 border-l-4 border-primary-500"
-            onClick={() => openAppointmentModal(appointment)}
-          >
-            <div className="font-semibold text-primary-700 dark:text-primary-300">{appointment.selectedTime}</div>
-            <div className="text-gray-600 dark:text-gray-200">{appointment?.userInfo?.name ?? 'N/A'}</div>
-          </div>
-        ))}
+        {appointments.map(appointment => {
+          const getStatusText = () => {
+            if (appointment?.paid === 1) return 'Paid';
+            if (appointment?.member === true) return 'Community Member';
+            return 'Not Paid';
+          };
+
+          const getStatusColor = () => {
+            if (appointment?.paid === 1) return 'border-green-500 text-green-600 dark:text-green-400';
+            if (appointment?.member === true) return 'border-blue-500 text-blue-600 dark:text-blue-400';
+            return 'border-primary-500 text-gray-500 dark:text-gray-400';
+          };
+
+          return (
+            <div 
+              key={appointment.id} 
+              className={`p-4 bg-white dark:bg-gray-700 shadow-md rounded-lg cursor-pointer hover:shadow-lg transition-shadow duration-300 border-l-4 ${getStatusColor().split(' ')[0]}`}
+              onClick={() => openAppointmentModal(appointment)}
+            >
+              <div className="font-semibold text-primary-700 dark:text-primary-300">{appointment.selectedTime}</div>
+              <div className="text-gray-600 dark:text-gray-200">{appointment?.userInfo?.name ?? 'N/A'}</div>
+              <div className={`text-xs mt-1 ${getStatusColor().split(' ')[1]} ${getStatusColor().split(' ')[2]}`}>
+                {getStatusText()}
+              </div>
+            </div>
+          );
+        })}
       </div>
 
       {selectedAppointment && (
         <AppointmentModal
           appointment={selectedAppointment}
           onClose={closeAppointmentModal}
-          markAsCompleted={markAsCompleted}
-          markAsNoShow={markAsNoShow}
+          togglePaidStatus={togglePaidStatus}
           deleteAppointment={deleteAppointment}
-          undoStatusChange={undoStatusChange}
-          markAsNoCureNoPay={markAsNoCureNoPay}
         />
       )}
 
