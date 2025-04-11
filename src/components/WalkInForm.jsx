@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { collection, addDoc } from 'firebase/firestore';
+import { collection, addDoc, Timestamp } from 'firebase/firestore';
 import { db } from '../firebase';
 
 const WalkInForm = () => {
@@ -10,6 +10,7 @@ const WalkInForm = () => {
   const [otherServiceType, setOtherServiceType] = useState('');
   const [otherAmountPaid, setOtherAmountPaid] = useState('');
   const [notes, setNotes] = useState('');
+  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
 
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
@@ -22,20 +23,28 @@ const WalkInForm = () => {
       !bikeType ||
       !serviceType ||
       !amountPaid ||
+      !selectedDate ||
       (bikeType === 'Other' && !otherBikeType) ||
       (serviceType === 'Other' && !otherServiceType) ||
       (amountPaid === 'Other' && !otherAmountPaid)
     ) {
-      setErrorMessage('Please fill in all required fields.');
+      setErrorMessage('Please fill in all required fields, including the date.');
       return;
     }
+    
+    // Create timestamp from selected date (set time to noon to avoid timezone issues)
+    const dateParts = selectedDate.split('-');
+    const year = parseInt(dateParts[0], 10);
+    const month = parseInt(dateParts[1], 10) - 1; // Month is 0-indexed
+    const day = parseInt(dateParts[2], 10);
+    const timestampDate = new Date(year, month, day, 12, 0, 0); // Set to noon
 
     const walkInData = {
       bikeType: bikeType === 'Other' ? otherBikeType : bikeType,
       serviceType: serviceType === 'Other' ? otherServiceType : serviceType,
       amountPaid: amountPaid === 'Other' ? otherAmountPaid : amountPaid,
       notes,
-      timestamp: new Date(),
+      timestamp: Timestamp.fromDate(timestampDate),
     };
 
     try {
@@ -49,6 +58,7 @@ const WalkInForm = () => {
       setOtherServiceType('');
       setOtherAmountPaid('');
       setNotes('');
+      setSelectedDate(new Date().toISOString().split('T')[0]);
       setErrorMessage('');
       
       // Show success message
@@ -57,6 +67,7 @@ const WalkInForm = () => {
         setSuccessMessage('');
       }, 3000); // Hide the message after 3 seconds
     } catch (error) {
+      console.error("Error adding walk-in:", error);
       setErrorMessage('An error occurred while submitting. Please try again.');
     }
   };
@@ -78,6 +89,18 @@ const WalkInForm = () => {
       )}
 
       <div className="space-y-4">
+        <div>
+          <label htmlFor="walkin-date" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Date</label>
+          <input
+            type="date"
+            id="walkin-date"
+            value={selectedDate}
+            onChange={(e) => setSelectedDate(e.target.value)}
+            className="input dark:bg-gray-700 dark:text-white"
+            required
+          />
+        </div>
+        
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Bike Type</label>
           <div className="flex flex-wrap gap-2">
