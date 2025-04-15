@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-const AppointmentModal = ({ appointment, onClose, togglePaidStatus, deleteAppointment }) => {
+const AppointmentModal = ({ appointment, onClose, togglePaidStatus, deleteAppointment, getStatusInfo, isHistorical }) => {
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
 
   const handleDelete = () => {
@@ -12,11 +12,8 @@ const AppointmentModal = ({ appointment, onClose, togglePaidStatus, deleteAppoin
     setShowDeleteConfirmation(false);
   };
 
-  const getStatusText = () => {
-    if (appointment?.paid === 1) return 'Paid';
-    if (appointment?.member === true) return 'Community Member';
-    return 'Not Paid';
-  };
+  // Get status text using the helper function passed from Dashboard
+  const statusInfo = getStatusInfo(appointment);
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
@@ -53,24 +50,28 @@ const AppointmentModal = ({ appointment, onClose, togglePaidStatus, deleteAppoin
 
           <div>Date: {appointment?.selectedDate ? new Date(appointment.selectedDate).toLocaleDateString() : 'N/A'}</div>
           <div>Time: {appointment?.selectedTime ?? 'N/A'}</div>
-          <div>Status: {getStatusText()}</div>
+          {/* Use the status text from getStatusInfo */}
+          <div>Status: {statusInfo.text}</div> 
         </div>
 
         <div className="flex gap-2 flex-wrap">
-          {appointment?.paid === 1 ? (
-            <button
-              onClick={() => togglePaidStatus(appointment.id, false)}
-              className="btn btn-secondary"
-            >
-              Mark as Not Paid
-            </button>
-          ) : (
-            <button
-              onClick={() => togglePaidStatus(appointment.id, true)}
-              className="btn btn-primary"
-            >
-              Mark as Paid
-            </button>
+          {/* Only show Paid/Not Paid buttons for non-historical appointments */}
+          {!isHistorical && (
+            appointment?.paid === 1 ? (
+              <button
+                onClick={() => togglePaidStatus(appointment.id, false)}
+                className="btn btn-secondary"
+              >
+                Mark as Not Paid
+              </button>
+            ) : (
+              <button
+                onClick={() => togglePaidStatus(appointment.id, true)}
+                className="btn btn-primary"
+              >
+                Mark as Paid
+              </button>
+            )
           )}
           <button
             onClick={handleDelete}
