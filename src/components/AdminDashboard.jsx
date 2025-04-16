@@ -3,19 +3,36 @@ import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth,
          isMonday, isWednesday, isThursday, startOfDay, endOfDay } from 'date-fns';
 import { db } from '../firebase';
 import { collection, addDoc, getDocs, query, where, Timestamp, deleteDoc } from 'firebase/firestore';
+import { holidayDates } from '../config/holidays'; // Import the holiday dates
 
 const getCalendarDays = (month) => {
   const start = startOfMonth(month);
   const end = endOfMonth(month);
-  const firstDayOfMonth = start.getDay(); // 0-6, where 0 is Sunday
   
-  // Create array for empty cells before the first day
-  const emptyDays = Array(firstDayOfMonth).fill(null);
+  // Calculate the start of the week for the first day of the month
+  const firstDayOfMonth = start.getDay(); // 0 for Sunday, 1 for Monday, etc.
+  const startOfCalendar = new Date(start);
+  startOfCalendar.setDate(start.getDate() - firstDayOfMonth);
+
+  // Calculate the end of the week for the last day of the month
+  const lastDayOfMonth = end.getDay(); // 0 for Sunday, 1 for Monday, etc.
+  const endOfCalendar = new Date(end);
+  endOfCalendar.setDate(end.getDate() + (6 - lastDayOfMonth));
+
+  const days = eachDayOfInterval({ start: startOfCalendar, end: endOfCalendar });
+
+  // Adjust start and end to potentially cover 6 weeks for consistent grid height
+  if (days.length < 42) { 
+    const daysToAdd = 42 - days.length;
+    const lastDate = days[days.length - 1];
+    for (let i = 1; i <= daysToAdd; i++) {
+        const nextDate = new Date(lastDate);
+        nextDate.setDate(lastDate.getDate() + i);
+        days.push(nextDate);
+    }
+  }
   
-  // Create array for the actual days
-  const days = eachDayOfInterval({ start, end });
-  
-  return [...emptyDays, ...days];
+  return days;
 };
 
 const AdminDashboard = () => {
@@ -124,27 +141,37 @@ const AdminDashboard = () => {
     return addedCount;
   };
 
+  // Add helper to check for holidays
+  const isHoliday = (date) => {
+    const dateString = format(date, 'yyyy-MM-dd');
+    return holidayDates.includes(dateString);
+  };
+
   const handleDateClick = (date) => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
+    const dateStr = format(date, 'yyyy-MM-dd');
 
-    // Prevent selecting dates in the past
+    // Prevent selecting dates in the past, non-eligible days, or holidays
     if (date < today) {
-      setMessage('Cannot modify dates in the past');
+      setMessage('Cannot modify dates in the past.');
       return;
     }
-
     if (!isMonday(date) && !isWednesday(date) && !isThursday(date)) {
-      setMessage('Only Monday, Wednesday, and Thursday can be selected');
+      setMessage('Only Monday, Wednesday, and Thursday can be modified.');
+      return;
+    }
+    if (isHoliday(date)) {
+      setMessage('Cannot modify holiday dates.');
       return;
     }
     
-    const dateStr = format(date, 'yyyy-MM-dd');
     setSelectedDates(prev => 
       prev.includes(dateStr) 
         ? prev.filter(d => d !== dateStr)
         : [...prev, dateStr]
     );
+    setMessage(''); // Clear message on valid click
   };
 
   // Add this new function to check for existing appointments
@@ -174,6 +201,8 @@ const AdminDashboard = () => {
       // Check for existing appointments on dates being removed
       for (const dateStr of datesToRemove) {
         const date = new Date(dateStr);
+        // Adjust date to local noon to avoid timezone issues with date comparison
+        date.setHours(12, 0, 0, 0);
         const appointmentCount = await checkForExistingAppointments(date);
         
         if (appointmentCount > 0) {
@@ -183,14 +212,18 @@ const AdminDashboard = () => {
           
           if (!confirmRemoval) {
             setLoading(false);
+            setMessage('Save cancelled.'); // Provide feedback
             return;
           }
         }
       }
 
       // Proceed with saving changes
+      let changesMade = false;
       for (const dateStr of selectedDates) {
         const date = new Date(dateStr);
+        // Adjust date to local noon to avoid timezone issues
+        date.setHours(12, 0, 0, 0); 
         const isDateAvailable = availableDates.includes(dateStr);
 
         if (isDateAvailable) {
@@ -198,14 +231,20 @@ const AdminDashboard = () => {
         } else {
           await addSlotsForDate(date);
         }
+        changesMade = true;
       }
 
-      await loadAvailableDates();
-      setSelectedDates([]);
-      setMessage('Changes saved successfully');
+      if (changesMade) {
+        await loadAvailableDates(); // Reload only if changes were actually processed
+        setSelectedDates([]);
+        setMessage('Changes saved successfully.');
+      } else {
+        setMessage('No changes to save.'); // Handle case where save was cancelled
+      }
+
     } catch (error) {
       console.error('Error saving changes:', error);
-      setMessage('Error saving changes');
+      setMessage('Error saving changes. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -246,11 +285,11 @@ const AdminDashboard = () => {
       <h1 className="text-3xl font-bold mb-6 text-primary-700 dark:text-gray-200">Admin Dashboard</h1>
       
       {message && (
-        <div className={`mb-4 p-3 rounded ${
-          message.includes('Error') 
+        <div className={`mb-4 p-3 rounded ${ 
+          message.includes('Error') || message.includes('Cannot') || message.includes('cancelled')
             ? 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300'
             : 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300'
-        }`}>
+        }`}> 
           {message}
         </div>
       )}
@@ -287,32 +326,37 @@ const AdminDashboard = () => {
             </div>
           ))}
           {getCalendarDays(currentMonth).map((date, i) => {
-            if (!date) {
-              // Render empty cell
-              return <div key={`empty-${i}`} className="p-4" />;
-            }
+            if (!date) return <div key={`empty-${i}`} className="p-4" />;
 
             const dateStr = format(date, 'yyyy-MM-dd');
             const isAvailable = availableDates.includes(dateStr);
             const isSelected = selectedDates.includes(dateStr);
             const isValidDay = isMonday(date) || isWednesday(date) || isThursday(date);
             const isPast = date < new Date().setHours(0, 0, 0, 0);
+            const isHolidayFlag = isHoliday(date); // Check if it's a holiday
+            const isCurrentMonthFlag = isSameMonth(date, currentMonth);
+
+            const isDisabled = isPast || !isValidDay || isHolidayFlag;
 
             return (
               <div
                 key={i}
-                onClick={() => !loading && !isPast && handleDateClick(date)}
+                onClick={() => !loading && !isDisabled && isCurrentMonthFlag && handleDateClick(date)} // Prevent click on disabled/holiday/outside month
                 className={`
-                  p-4 text-center cursor-pointer rounded-lg transition-colors
-                  ${isSelected ? 'bg-primary-500 text-white' : ''}
-                  ${isAvailable && !isSelected ? 'bg-green-500 text-white' : ''}
-                  ${!isValidDay ? 'bg-gray-200 dark:bg-gray-600 text-gray-400 dark:text-gray-500 cursor-not-allowed' : ''}
-                  ${isPast ? 'bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed' : ''}
-                  ${!isSelected && !isAvailable && isValidDay && !isPast ? 'bg-gray-100 dark:bg-gray-700 text-white hover:bg-gray-200 dark:hover:bg-gray-600' : ''}
-                  ${!isSameMonth(date, currentMonth) ? 'opacity-50' : ''}
+                  p-4 text-center rounded-lg transition-colors
+                  ${!isCurrentMonthFlag ? 'opacity-50' : ''}
+                  ${isDisabled 
+                    ? `cursor-not-allowed ${isHolidayFlag ? 'bg-gradient-to-br from-yellow-400 to-orange-500 text-white' : 'bg-gray-200 dark:bg-gray-600 text-gray-400 dark:text-gray-500'}` 
+                    : isSelected 
+                      ? 'bg-primary-500 text-white cursor-pointer' 
+                      : isAvailable 
+                        ? 'bg-green-500 text-white cursor-pointer' 
+                        : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 cursor-pointer'
+                  }
                 `}
               >
                 {format(date, 'd')}
+                {isHolidayFlag && isCurrentMonthFlag && <span className="block text-xs mt-1">Holiday</span>} {/* Add Holiday text */}
               </div>
             );
           })}
@@ -324,8 +368,12 @@ const AdminDashboard = () => {
           </div>
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+              <div className="w-4 h-4 bg-yellow-400 rounded"></div>
+              <span>Holiday</span>
+            </div>
+            <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
               <div className="w-4 h-4 bg-green-500 rounded"></div>
-              <span>Open for bookings</span>
+              <span>Open</span>
             </div>
             <button
               onClick={handleSave}
