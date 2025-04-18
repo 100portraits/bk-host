@@ -8,10 +8,9 @@ export const holidayDates = [
   // '2025-01-01', // New Year's Day
   // Add your specific holiday dates below:
   '2025-04-21',
-  '2025-04-28',
-  '2025-04-30',
-  '2025-05-01',
+
   '2025-05-05',
+  '2025-05-29',
   '2025-06-09'
   // ... add more dates as needed
 ]; 
