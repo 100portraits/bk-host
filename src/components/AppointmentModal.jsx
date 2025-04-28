@@ -55,24 +55,45 @@ const AppointmentModal = ({ appointment, onClose, togglePaidStatus, deleteAppoin
         </div>
 
         <div className="flex gap-2 flex-wrap">
-          {/* Only show Paid/Not Paid buttons for non-historical appointments */}
+          {/* Only show status toggle buttons for non-historical appointments */}
           {!isHistorical && (
-            appointment?.paid === 1 ? (
-              <button
-                onClick={() => togglePaidStatus(appointment.id, false)}
-                className="btn btn-secondary"
-              >
-                Mark as Not Paid
-              </button>
+            appointment.member === true ? (
+              // Buttons for Community Members
+              appointment.paid === 1 ? (
+                <button
+                  onClick={() => togglePaidStatus(appointment.id, false)}
+                  className="btn btn-secondary"
+                >
+                  Mark as Not Completed
+                </button>
+              ) : (
+                <button
+                  onClick={() => togglePaidStatus(appointment.id, true)}
+                  className="btn btn-primary"
+                >
+                  Mark as Completed
+                </button>
+              )
             ) : (
-              <button
-                onClick={() => togglePaidStatus(appointment.id, true)}
-                className="btn btn-primary"
-              >
-                Mark as Paid
-              </button>
+              // Buttons for Non-Members
+              appointment.paid === 1 ? (
+                <button
+                  onClick={() => togglePaidStatus(appointment.id, false)}
+                  className="btn btn-secondary"
+                >
+                  Mark as Not Paid
+                </button>
+              ) : (
+                <button
+                  onClick={() => togglePaidStatus(appointment.id, true)}
+                  className="btn btn-primary"
+                >
+                  Mark as Paid
+                </button>
+              )
             )
           )}
+          {/* Always show Delete and Close buttons */}
           <button
             onClick={handleDelete}
             className="btn bg-red-500 hover:bg-red-600 text-white"

@@ -67,9 +67,9 @@ const Dashboard = () => {
 
   // Toggle appointment paid status (only for appointments on/after transition date)
   const togglePaidStatus = async (id, isPaid) => {
-    const appointmentDoc = doc(db, 'appointments', id);
-    const appointmentSnapshot = await getDoc(appointmentDoc);
-    const appointmentData = appointmentSnapshot.data();
+      const appointmentDoc = doc(db, 'appointments', id);
+      const appointmentSnapshot = await getDoc(appointmentDoc);
+      const appointmentData = appointmentSnapshot.data();
     const apptDate = appointmentData.timestamp.toDate();
 
     // Only allow status changes for new system appointments
@@ -82,18 +82,18 @@ const Dashboard = () => {
     try {
       const paidValue = isPaid ? 1 : 0;
       await updateDoc(appointmentDoc, { paid: paidValue });
-      
+
       // Send completion email if marked as paid
       if (isPaid) {
-        const mailRef = collection(db, 'mail');
-        await addDoc(mailRef, {
-          to: appointmentData.userInfo.email,
-          message: {
-            subject: "Bedankt voor je bezoek aan Bike Kitchen UvA!",
+      const mailRef = collection(db, 'mail');
+      await addDoc(mailRef, {
+        to: appointmentData.userInfo.email,
+        message: {
+          subject: "Bedankt voor je bezoek aan Bike Kitchen UvA!",
             text: `Hey sleutelaar!\n\nBedankt voor je tijd! Is het allemaal gelukt met de reparatie?\n\nLaat hier een review achter over hoe je het bezoek ervaren hebt:\nhttps://forms.gle/AQcZFAddzHWT7dn26\n\nBen je geïnteresseerd in workshops, andere evenementen en het ondersteunen van de Bike Kitchen (inclusief gratis gebruik van de ruimte!)? Word dan lid voor slechts 4 euro per maand. Meer informatie vind je hier: https://doneren.auf.nl/bike-kitchen\n\nHopelijk tot snel! Boek uw volgende afspraak hier: https://bikekitchen.nl\n\nVriendelijke groet,\n\nHet Bike Kitchen UvA-team\n\n---\n\nHey mechanic!\n\nThank you for your time! Did everything work out with the repair?\n\nPlease leave a review about your experience here:\nhttps://forms.gle/AQcZFAddzHWT7dn26\n\nInterested in participating in workshops, other events and supporting the Bike Kitchen (including free use of the space!)? Consider becoming a member for just 4 euros per month. More information here: https://doneren.auf.nl/bike-kitchen\n\nHope to see you soon! Book your next appointment here: https://bikekitchen.nl\n\nBest regards,\n\nThe Bike Kitchen UvA team`,
             html: `<div style="font-family: Arial, sans-serif;">\n  <h2>Hey sleutelaar!</h2>\n  <p>Bedankt voor je tijd! Is het allemaal gelukt met de reparatie?</p>\n  <p>Laat hier een review achter over hoe je het bezoek ervaren hebt:</p>\n  <p><a href="https://forms.gle/AQcZFAddzHWT7dn26" style="display: inline-block; padding: 10px 20px; background-color: #ef4444; color: white; text-decoration: none; border-radius: 5px;">Geef je feedback</a></p>\n  <p>Ben je geïnteresseerd in workshops, andere evenementen en het ondersteunen van de Bike Kitchen (inclusief gratis gebruik van de ruimte!)? Word dan lid voor slechts 4 euro per maand. Meer informatie vind je <a href="https://doneren.auf.nl/bike-kitchen" style="color: #ef4444; text-decoration: underline;">hier</a>.</p>\n  <p>Hopelijk tot snel! <a href="https://bikekitchen.nl" style="color: #ef4444; text-decoration: underline;">Boek uw volgende afspraak hier</a>.</p>\n  <p>Vriendelijke groet,<br>Het Bike Kitchen UvA-team</p>\n\n  <hr style="margin: 30px 0; border: none; border-top: 1px solid #ddd;">\n\n  <h2>Hey mechanic!</h2>\n  <p>Thank you for your time! Did everything work out with the repair?</p>\n  <p>Please leave a review about your experience here:</p>\n  <p><a href="https://forms.gle/AQcZFAddzHWT7dn26" style="display: inline-block; padding: 10px 20px; background-color: #ef4444; color: white; text-decoration: none; border-radius: 5px;">Give your feedback</a></p>\n  <p>Interested in participating in workshops, other events and supporting the Bike Kitchen (including free use of the space!)? Consider becoming a member for just 4 euros per month. More information <a href="https://doneren.auf.nl/bike-kitchen" style="color: #ef4444; text-decoration: underline;">here</a>.</p>\n  <p>Hope to see you soon! <a href="https://bikekitchen.nl" style="color: #ef4444; text-decoration: underline;">Book your next appointment here</a>.</p>\n  <p>Best regards,<br>The Bike Kitchen UvA team</p>\n</div>`
-          }
-        });
+        }
+      });
       }
 
       setAppointments((prevAppointments) =>
@@ -225,8 +225,19 @@ const Dashboard = () => {
       return { text: 'Pending (Old)', color: 'border-gray-500 text-gray-600 dark:text-gray-400' };
     } else {
       // New system logic
-      if (appointment.paid === 1) return { text: 'Paid', color: 'border-green-500 text-green-600 dark:text-green-400' };
-      if (appointment.member === true) return { text: 'Community Member', color: 'border-blue-500 text-blue-600 dark:text-blue-400' };
+      if (appointment.paid === 1) {
+        // If paid/completed, check if they are a member for specific text
+        if (appointment.member === true) {
+          return { text: 'Completed (Member)', color: 'border-green-500 text-green-600 dark:text-green-400' };
+        } else {
+          return { text: 'Paid', color: 'border-green-500 text-green-600 dark:text-green-400' };
+        }
+      }
+      // If not paid/completed, check if they are a member
+      if (appointment.member === true) {
+         return { text: 'Community Member', color: 'border-blue-500 text-blue-600 dark:text-blue-400' };
+      }
+      // Default for non-members who haven't paid
       return { text: 'Not Paid', color: 'border-primary-500 text-gray-500 dark:text-gray-400' };
     }
   };
@@ -259,17 +270,17 @@ const Dashboard = () => {
           const statusColorClasses = statusInfo.color.split(' ');
           
           return (
-            <div 
-              key={appointment.id} 
+          <div 
+            key={appointment.id} 
               className={`p-4 bg-white dark:bg-gray-700 shadow-md rounded-lg cursor-pointer hover:shadow-lg transition-shadow duration-300 border-l-4 ${statusColorClasses[0]}`}
-              onClick={() => openAppointmentModal(appointment)}
-            >
-              <div className="font-semibold text-primary-700 dark:text-primary-300">{appointment.selectedTime}</div>
-              <div className="text-gray-600 dark:text-gray-200">{appointment?.userInfo?.name ?? 'N/A'}</div>
+            onClick={() => openAppointmentModal(appointment)}
+          >
+            <div className="font-semibold text-primary-700 dark:text-primary-300">{appointment.selectedTime}</div>
+            <div className="text-gray-600 dark:text-gray-200">{appointment?.userInfo?.name ?? 'N/A'}</div>
               <div className={`text-xs mt-1 ${statusColorClasses[1]} ${statusColorClasses[2]}`}>
                 {statusInfo.text}
               </div>
-            </div>
+          </div>
           );
         })}
       </div>
