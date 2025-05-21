@@ -3,7 +3,7 @@ import { startOfMonth, endOfMonth, eachDayOfInterval, format, isTuesday, isFrida
 import { db } from '../firebase.js';
 import { collection, query, where, getDocs, Timestamp, updateDoc, arrayUnion, arrayRemove, doc, getDoc } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
-import { holidayDates } from '../config/holidays'; // Import the holiday dates
+import { holidayDates, holidayLabels } from '../config/holidays'; // Import holiday labels
 
 const Calendar = () => {
   const [selectedDates, setSelectedDates] = useState([]);
@@ -82,6 +82,11 @@ const Calendar = () => {
   const isHoliday = (date) => {
     const dateString = format(date, 'yyyy-MM-dd');
     return holidayDates.includes(dateString);
+  };
+
+  const getHolidayLabel = (date) => {
+    const dateString = format(date, 'yyyy-MM-dd');
+    return holidayLabels[dateString] || 'Holiday';
   };
 
   const handleDateClick = (date) => {
@@ -163,11 +168,11 @@ const Calendar = () => {
 
   return (
     <div className="p-6 bg-white dark:bg-gray-800 shadow-lg rounded-lg mb-6 max-h-[100vh] overflow-y-auto">
-      {/* Remove the holiday closure message */}
-      {/* <div className="mb-6 p-4 bg-red-100 dark:bg-red-900 border-l-4 border-red-500 text-red-700 dark:text-red-200">
-        <p className="font-bold">Holiday Closures!</p>
-        <p>The Bike Kitchen will be closed from December 23rd to January 2nd. Happy Holidays! 🎄</p>
-      </div> */}
+      {/* Summer Holiday closure message */}
+      <div className="mb-6 p-4 bg-red-100 dark:bg-red-900 border-l-4 border-red-500 text-red-700 dark:text-red-200">
+        <p className="font-bold">Summer Holiday Closure!</p>
+        <p>The Bike Kitchen will be closed on Mondays, Wednesdays, and Thursdays from June 20th to August 24th, 2025. See you in late summer! 🌞</p>
+      </div>
 
       <h1 className="text-3xl font-bold mb-6 text-primary-700 dark:text-gray-200">Availability Calendar</h1>
       <div className="flex justify-between items-center mb-4">
@@ -245,7 +250,7 @@ const Calendar = () => {
                 </div>
               )}
               {isHolidayFlag && (
-                <div className="text-xs mt-1">Holiday</div>
+                <div className="text-xs mt-1">{getHolidayLabel(date)}</div>
               )}
             </div>
           );
