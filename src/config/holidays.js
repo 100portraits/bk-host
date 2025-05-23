@@ -31,7 +31,7 @@ export const holidayLabels = {
   // Format: 'YYYY-MM-DD': 'Custom Text'
   // Summer Holiday dates - Mondays, Wednesdays, Thursdays only
   // June 2025
-  '2025-06-23': 'Summer Holiday', '2025-06-25': 'Summer Holiday', '2025-06-26': 'Summer Holiday', '2025-06-30': 'Summer Holiday',
+  '2025-06-30': 'Summer Holiday',
   // July 2025
   '2025-07-02': 'Summer Holiday', '2025-07-03': 'Summer Holiday', '2025-07-07': 'Summer Holiday', '2025-07-09': 'Summer Holiday', '2025-07-10': 'Summer Holiday',
   '2025-07-14': 'Summer Holiday', '2025-07-16': 'Summer Holiday', '2025-07-17': 'Summer Holiday', '2025-07-21': 'Summer Holiday', '2025-07-23': 'Summer Holiday', 
