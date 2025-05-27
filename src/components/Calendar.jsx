@@ -171,7 +171,7 @@ const Calendar = () => {
       {/* Summer Holiday closure message */}
       <div className="mb-6 p-4 bg-red-100 dark:bg-red-900 border-l-4 border-red-500 text-red-700 dark:text-red-200">
         <p className="font-bold">Summer Holiday Closure!</p>
-        <p>The Bike Kitchen will be closed on Mondays, Wednesdays, and Thursdays from June 20th to August 24th, 2025. See you in late summer! 🌞</p>
+        <p>The Bike Kitchen will be closed from June 27th to August 24th, 2025. See you after the summer! 🌞</p>
       </div>
 
       <h1 className="text-3xl font-bold mb-6 text-primary-700 dark:text-gray-200">Availability Calendar</h1>
