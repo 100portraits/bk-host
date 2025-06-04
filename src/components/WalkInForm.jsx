@@ -39,10 +39,15 @@ const WalkInForm = () => {
     const day = parseInt(dateParts[2], 10);
     const timestampDate = new Date(year, month, day, 12, 0, 0); // Set to noon
 
+    // Determine final amount and community member status
+    const isCommunityMember = amountPaid === 'Community Member';
+    const finalAmount = isCommunityMember ? '0' : (amountPaid === 'Other' ? otherAmountPaid : amountPaid);
+
     const walkInData = {
       bikeType: bikeType === 'Other' ? otherBikeType : bikeType,
       serviceType: serviceType === 'Other' ? otherServiceType : serviceType,
-      amountPaid: amountPaid === 'Other' ? otherAmountPaid : amountPaid,
+      amountPaid: finalAmount,
+      isCommunityMember: isCommunityMember,
       notes,
       timestamp: Timestamp.fromDate(timestampDate),
     };
@@ -164,7 +169,7 @@ const WalkInForm = () => {
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Amount Paid (€)</label>
           <div className="flex flex-wrap gap-2">
-            {['5', '8', 'Other'].map(amount => (
+            {['5', '8', 'Community Member', 'Other'].map(amount => (
               <button
                 key={amount}
                 type="button"
@@ -175,7 +180,7 @@ const WalkInForm = () => {
                     : 'bg-gray-200 text-gray-700 dark:bg-gray-600 dark:text-gray-300'
                 }`}
               >
-                {amount}€
+                {amount === 'Community Member' ? 'Community Member (Free)' : `${amount}€`}
               </button>
             ))}
           </div>

@@ -299,14 +299,22 @@ const Dashboard = () => {
       <h2 className="text-xl mt-8 mb-4 font-semibold text-black dark:text-gray-200">Today's Walk-ins</h2>
       {walkIns.length > 0 ? (
         <ul className="space-y-4">
-          {walkIns.map(walkIn => (
-            <li key={walkIn.id} className="p-4 bg-white dark:bg-gray-700 shadow-md rounded-lg border-l-4 border-secondary-500">
+          {walkIns.map(walkIn => {
+            // Determine border color and status based on community member status
+            const isCommunityMember = walkIn.isCommunityMember === true;
+            const borderColor = isCommunityMember ? 'border-secondary-500' : 'border-primary-500';
+            const statusText = isCommunityMember ? 'Community Member (Free)' : `${walkIn.amountPaid}€`;
+            const statusColor = isCommunityMember ? 'text-blue-600 dark:text-blue-400' : 'text-gray-700 dark:text-gray-300';
+            
+            return (
+            <li key={walkIn.id} className={`p-4 bg-white dark:bg-gray-700 shadow-md rounded-lg border-l-4 ${borderColor}`}>
               <div className="grid grid-cols-2 gap-2">
                 <div className="text-gray-700 dark:text-gray-300">Bike Type: <span className="font-semibold">{walkIn.bikeType}</span></div>
                 <div className="text-gray-700 dark:text-gray-300">Service Type: <span className="font-semibold">{walkIn.serviceType}</span></div>
-                <div className="text-gray-700 dark:text-gray-300">Amount Paid: <span className="font-semibold">{walkIn.amountPaid}€</span></div>
+                <div className="text-gray-700 dark:text-gray-300">Amount Paid: <span className={`font-semibold ${statusColor}`}>{statusText}</span></div>
                 <div className="text-gray-700 dark:text-gray-300">Time: <span className="font-semibold">{new Date(walkIn.timestamp.seconds * 1000).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}</span></div>
               </div>
+
 
               <div className="mt-4 space-x-2">
                 <button
@@ -359,7 +367,8 @@ const Dashboard = () => {
                 </form>
               )}
             </li>
-          ))}
+            );
+          })}
         </ul>
       ) : (
         <p className="text-gray-600 dark:text-gray-400 text-center py-4 bg-gray-100 dark:bg-gray-700 rounded-lg">No walk-ins recorded yet.</p>
